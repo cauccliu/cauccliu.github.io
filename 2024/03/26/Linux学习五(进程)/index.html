@@ -1,0 +1,787 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="Linux学习五 : 进程虚拟地址空间虚拟地址空间：虚拟内存将物理内存抽象为地址空间，每个进程都有各自地址空间。地址空间中页被映射到物理内存，地址空间的页并不需要全部在物理内存中，当使用到一个没有在物理内存的页时，执行页面置换算法，将该页置换到内存中。虚拟地址空间的大小也由操作系统决定，32位的操作系统虚拟地址空间的大小为 2^32 字节，也就是4G，64位的操作系统虚拟地址空间大小为2 ^64">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux学习五(进程)">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%BA%94(%E8%BF%9B%E7%A8%8B)/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="Linux学习五 : 进程虚拟地址空间虚拟地址空间：虚拟内存将物理内存抽象为地址空间，每个进程都有各自地址空间。地址空间中页被映射到物理内存，地址空间的页并不需要全部在物理内存中，当使用到一个没有在物理内存的页时，执行页面置换算法，将该页置换到内存中。虚拟地址空间的大小也由操作系统决定，32位的操作系统虚拟地址空间的大小为 2^32 字节，也就是4G，64位的操作系统虚拟地址空间大小为2 ^64">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/db51ba73ca564fc08f5f86086540b94e.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/42b27140d2c946dfabf635aebf26a6ed.png#pic_center">
+<meta property="article:published_time" content="2024-03-26T12:53:19.179Z">
+<meta property="article:modified_time" content="2024-03-26T12:54:03.177Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/db51ba73ca564fc08f5f86086540b94e.png">
+  
+  
+  
+  <title>Linux学习五(进程) - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux学习五(进程)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 20:53" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          36 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux学习五(进程)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Linux学习五-进程"><a href="#Linux学习五-进程" class="headerlink" title="Linux学习五 : 进程"></a>Linux学习五 : 进程</h1><h2 id="虚拟地址空间"><a href="#虚拟地址空间" class="headerlink" title="虚拟地址空间"></a>虚拟地址空间</h2><p><code>虚拟地址空间</code>：虚拟内存将物理内存抽象为地址空间，每个进程都有各自地址空间。地址空间中页被映射到物理内存，地址空间的页并不需要全部在物理内存中，当使用到一个没有在物理内存的页时，执行页面置换算法，将该页置换到内存中。<br>虚拟地址空间的大小也由操作系统决定，32位的操作系统虚拟地址空间的大小为 2^32 字节，也就是4G，64位的操作系统虚拟地址空间大小为2 ^64 字节。</p>
+<ul>
+<li>虚拟内存的目的是为了让物理内存扩充成更大的逻辑内存，从而让程序获得更多的可用内存。</li>
+<li>为了更好的管理内存，操作系统将内存抽象成地址空间。每个程序拥有自己的地址空间，这个地址空间被分割成多个块，每一块称为一页。</li>
+</ul>
+<p><code>从操作系统层级上看，虚拟地址空间主要分为两个部分内核区和用户区。</code><br>内核空间在3-4G在今后陪你过，驻留在内存中，是操作系统的一部分。系统中所有进程对应的虚拟地址空间的内核区都会映射到同一块物理内存上（系统内核只有一个）。<br><img src="https://img-blog.csdnimg.cn/direct/db51ba73ca564fc08f5f86086540b94e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<ul>
+<li>保留区：未赋予物理地址。NULL指向这块地址。</li>
+<li>代码段：通常存放CPU指令和函数。</li>
+<li>数据段：存放已初始化且初值不为0的全局变量和静态变量。数据段属于静态内存分配(静态存储区)，可读可写。</li>
+<li>.bss段: 未初始化以及初始为0的全局变量和静态变量，操作系统会将这些未初始化变量初始化为0</li>
+<li>堆：new出来的，需要释放。</li>
+<li>内存映射区：作为内存映射区加载磁盘文件，或者加载程序运作过程中需要调用的动态库。</li>
+<li>栈：存储函数内部声明的非静态局部变量，函数参数，函数返回地址等信息，栈内存由编译器自动分配释放。栈和堆相反地址“向下生长”，分配的内存是连续的。</li>
+</ul>
+<h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>Linux中一切都是文件，需要操作文件描述符进行读写操作。<br>Linux下进程启动就会得到一个对应的虚拟地址空间，进程控制块PCB中包含一个文件描述符表，用于存储文件描述符。</p>
+<ul>
+<li>每一个进程对应的文件描述符表能够存储的打开的文件数是有限制的, 默认为1024个，这个默认值是可以修改的，支持打开的最大文件数据取决于操作系统的硬件配置。</li>
+<li>当一个进程被启动之后，内核PCB的文件描述符表中就已经分配了三个文件描述符（标准输入stdin，标准输出stdout，标准错误stderr），这三个文件描述符对应的都是当前启动这个进程的终端文件。</li>
+<li>文件描述符表中不同的文件描述符可以对应同一个磁盘文件。</li>
+</ul>
+<blockquote>
+<p>open&#x2F;close 可以打开关闭文件，open还可以创建新的文件。<br>read 函数用于读取文件内部数据，在通过 open 打开文件的时候需要指定读权限。<br>write 函数用于将数据写入到文件内部，在通过 open 打开文件的时候需要指定写权限。<br>系统函数 lseek 的功能是比较强大的, 我们既可以通过这个函数移动文件指针, 也可以通过这个函数进行文件的拓展。</p>
+</blockquote>
+<blockquote>
+<p>file命令可以查看文件信息。<br>stat命令显示文件或目录的详细属性信息包括文件系统状态，比ls命令输出的信息更详细。<br>dup函数的作用是复制文件描述符，这样就有多个文件描述符可以指向同一个文件了。可以在进程中创建多个对同一文件的引用，可以对文件进行读取写入等操作。<br>dup2() 函数是 dup() 函数的加强版，基于dup2() 既可以进行文件描述符的复制, 也可以进行文件描述符的重定向。文件描述符重定向就是改变已经分配的文件描述符关联的磁盘文件。<br>fcntl() 是一个变参函数, 并且是多功能函数，可以通过这个函数实现文件描述符的复制和获取&#x2F;设置已打开的文件属性。</p>
+</blockquote>
+<blockquote>
+<p>opendir(), readdir(), closedir()。 readdir() 函数遍历目录中的文件信息。<br>scandir()函数进行目录的遍历（只遍历指定目录，不进入到子目录中进行递归遍历）。</p>
+</blockquote>
+<p><code>文件同步</code>：Linux中，文件系统通常使用缓存区来提高文件读写性能，当程序对文件进行读写操作时，数据首先会被写入到内核的缓冲区中，而不是直接写入磁盘，这样可以减少磁盘IO的次数，提高文件读写的效率。但是如果出现意外崩溃或断电，还未写入磁盘的数据将会丢失，导致数据的不一致性或丢失，这时候就需要用文件同步来确保数据的持久性和一致性。<br>文件同步需要用到的函数：</p>
+<blockquote>
+<p>fsync：单个文件，同步数据，同步元数据（文件加上属性，如时间，大小等）<br>fdatasync：单个文件，同步数据，不同步元数据<br>sync：所有文件，同步数据，同步元数据</p>
+</blockquote>
+<p><code>文本文件和二进制文件</code>：文本文件按照ASCII码编码，二进制文件按照十六进制编码。二进制文件比较稳定，不容易出错。</p>
+<blockquote>
+<p>fopen ： 标准IO打开文件。<br>fread：标准IO读取二进制文件。<br>fwrite：标准IO写二进制文件。</p>
+</blockquote>
+<p><code>缓存</code><br>标准IO（fread，fwrite）引入了缓存的概念，为了减少系统调用，提高IO性能。标准IO比文件IO多了一个缓存的流程。</p>
+<blockquote>
+<p>全缓存：数据量达到一定大小（4096字节）或遇到文件结束符时，缓冲区被刷新，数据才会被写入到目标设备（如终端或文件）。当打开文件后，如果文件与终端设备无关，则默认是全缓冲模式。<br>行缓存：包含换行符时会立即刷新。<br>无缓存：每次机械能IO操作时，都会立即刷新。</p>
+</blockquote>
+<p><img src="https://img-blog.csdnimg.cn/direct/42b27140d2c946dfabf635aebf26a6ed.png#pic_center" srcset="/img/loading.gif" lazyload alt="图源https://www.bilibili.com/video/BV1rN411W7eD/?spm_id_from=333.999.0.0&amp;vd_source=a4ddf2ef7da26e74ca075b2059607bd6"></p>
+<h2 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h2><ol>
+<li>程序是磁盘上的可执行文件，只占用磁盘空间，是一个静态概念。</li>
+<li>进程是被执行的程序，不占用磁盘空间，需要消耗系统的内存，CPU资源，每个进程都有一个自己的虚拟地址空间，是一个动态概念。</li>
+<li>进程是操作系统进行资源分配和管理的基本单位，每个进程都有自己的独立空间，包含代码、数据和堆栈等。</li>
+<li>环境变量是操作系统中用来存储特定信息的动态值，通常被用于配置程序运行所需的各种信息，如系统路径，语言设置，临时文件设置等。</li>
+</ol>
+<p><code>并行和并发</code></p>
+<blockquote>
+<p>CPU在某个时间节点只能处理一个任务，但是操作系统都支持多任务的，<strong>CPU会给每个进程被分配一个时间段</strong>，进程得到这个时间片之后才可以运行，<strong>使各个程序从表面上看是同时进行的</strong>。如果在时间片结束时进程还在运行，CPU的使用权将被收回，该进程将会被中断挂起等待下一个时间片。如果进程在时间片结束前阻塞或结束，则CPU当即进行切换，这样就可以避免CPU资源的浪费。</p>
+</blockquote>
+<blockquote>
+<p>在我们使用的计算机中启动的多个程序，<strong>从宏观上看是同时运行的，从微观上看由于CPU一次只能处理一个进程，所有它们是轮流执行的，只不过切换速度太快，我们感觉不到罢了</strong>，因此CPU的核数越多计算机的处理效率越高。</p>
+</blockquote>
+<p>并发：并发的同时进行是一个假象，针对一个硬件资源，通过计算机CPU时间片的快速切换，使得程序表面看起来像是一起执行的。<br>并行：多进程同时运行时真实存在的，可以在同一时刻运行多个进程。</p>
+<blockquote>
+<p>进程控制块：PCB - 进程控制块（Processing Control Block），Linux内核的进程控制块本质上是一个叫做 task_struct的结构体。在这个结构体中记录了进程运行相关的一些信息</p>
+</blockquote>
+<p><code>进程一共有五种状态分别为：创建态，就绪态，运行态，阻塞态(挂起态)，退出态(终止态)其中创建态和退出态维持的时间是非常短的，稍纵即逝。</code></p>
+<ul>
+<li>就绪态：进程被创建出来了，有运行的资格但是还没有运行，需要抢CPU时间片，得到CPU时间片，进程开始运行，从就绪态转换为运行态。进程的CPU时间片用完了, 再次失去CPU, 从运行态转换为就绪态。</li>
+<li>运行态：运行态不会一直持续，进程的CPU时间片用完之后, 再次失去CPU，从运行态转换为就绪态，只要进程还没有退出，就会在就绪态和运行态之间不停的切换。</li>
+<li>阻塞态：进程被强制放弃CPU，并且没有抢夺CPU时间片的资格，比如: 在程序中调用了某些函数（比如: sleep()），进程又运行态转换为阻塞态（挂起态），当某些条件被满足了（比如：slee() 睡醒了），进程的阻塞状态也就被解除了，进程从阻塞态转换为就绪态。</li>
+</ul>
+<p><code>ps aux 查看进程信息 kill 杀死进程</code></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs powershell">liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> <span class="hljs-built_in">ps</span> aux<br>USER       PID %CPU %MEM    VSZ   RSS TTY      STAT <span class="hljs-built_in">START</span>   TIME COMMAND<br>root         <span class="hljs-number">1</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>   <span class="hljs-number">544</span> ?        <span class="hljs-built_in">Sl</span>   Dec18   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>root     <span class="hljs-number">24651</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        Ss   <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>root     <span class="hljs-number">24652</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        S    <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>liuchang <span class="hljs-number">24653</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>   <span class="hljs-number">4636</span>   <span class="hljs-number">828</span> pts/<span class="hljs-number">0</span>    Ss+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> sh <span class="hljs-literal">-c</span> <span class="hljs-string">&quot;<span class="hljs-variable">$VSCODE_WSL_EXT_LOCATION</span>/scripts/wslServer.sh&quot;</span> b7886d7461186a5eac768481578c1d7ca80e2d21 stable code<span class="hljs-literal">-server</span> .vscode<span class="hljs-literal">-server</span> <span class="hljs-literal">--host</span>=<span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span> <span class="hljs-literal">--port</span>=<span class="hljs-number">0</span> <span class="hljs-literal">--connecti</span><br>liuchang <span class="hljs-number">24654</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>   <span class="hljs-number">4636</span>   <span class="hljs-number">876</span> pts/<span class="hljs-number">0</span>    S+   <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> sh /mnt/c/Users/Liuchang/.vscode/extensions/ms<span class="hljs-literal">-vscode-remote</span>.remote<span class="hljs-literal">-wsl-0</span>.<span class="hljs-number">77.0</span>/scripts/wslServer.sh b7886d7461186a5eac768481578c1d7ca80e2d21 stable code<span class="hljs-literal">-server</span> .vsco<br>liuchang <span class="hljs-number">24659</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>   <span class="hljs-number">4636</span>   <span class="hljs-number">864</span> pts/<span class="hljs-number">0</span>    S+   <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> sh /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/bin/code<span class="hljs-literal">-server</span> <span class="hljs-literal">--host</span>=<span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span> <span class="hljs-literal">--port</span>=<span class="hljs-number">0</span> <span class="hljs-literal">--connection-token</span>=<span class="hljs-number">1794849578</span><span class="hljs-literal">-1708241527-4087</span><br>liuchang <span class="hljs-number">24663</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">951772</span> <span class="hljs-number">77072</span> pts/<span class="hljs-number">0</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">03</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/out/server<br>liuchang <span class="hljs-number">24674</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">658924</span> <span class="hljs-number">52708</span> pts/<span class="hljs-number">0</span>    Rl+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">04</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/out/bootst<br>liuchang <span class="hljs-number">24734</span>  <span class="hljs-number">0.9</span>  <span class="hljs-number">0.1</span> <span class="hljs-number">11538640</span> <span class="hljs-number">166668</span> pts/<span class="hljs-number">0</span> <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">1</span>:<span class="hljs-number">31</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/out/bootst<br>liuchang <span class="hljs-number">24758</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">717340</span> <span class="hljs-number">44276</span> pts/<span class="hljs-number">0</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/out/bootst<br>liuchang <span class="hljs-number">24771</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">23076</span>  <span class="hljs-number">5092</span> pts/<span class="hljs-number">4</span>    Ss   <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /bin/bash <span class="hljs-literal">--init-file</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/out/vs/workbench/contrib/terminal/browser/media/shellIntegration<span class="hljs-literal">-bas</span><br>liuchang <span class="hljs-number">24790</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">89636</span> <span class="hljs-number">23652</span> pts/<span class="hljs-number">0</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">03</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/extensions/ms<span class="hljs-literal">-vscode</span>.cpptools<span class="hljs-literal">-1</span>.<span class="hljs-number">19.1</span><span class="hljs-literal">-linux-x64</span>/bin/cpptools<br>liuchang <span class="hljs-number">24911</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">4269724</span> <span class="hljs-number">14372</span> pts/<span class="hljs-number">0</span>   <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">10</span>:<span class="hljs-number">58</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/extensions/ms<span class="hljs-literal">-vscode</span>.cpptools<span class="hljs-literal">-1</span>.<span class="hljs-number">19.1</span><span class="hljs-literal">-linux-x64</span>/bin/cpptools<span class="hljs-literal">-srv</span> <span class="hljs-number">24790</span> &#123;<span class="hljs-number">4</span>FDAC924<span class="hljs-literal">-C29C-4EC1-A9E5-E1E1D23C8266</span>&#125;<br>root     <span class="hljs-number">24959</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        Ss   <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>root     <span class="hljs-number">24960</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        S    <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>liuchang <span class="hljs-number">24961</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">596084</span> <span class="hljs-number">37636</span> pts/<span class="hljs-number">2</span>    Ssl+ <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node <span class="hljs-literal">-e</span>  const net = require(<span class="hljs-string">&#x27;net&#x27;</span>); process.stdin.pause(); const client = net.createConne<br>root     <span class="hljs-number">24968</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        Ss   <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>root     <span class="hljs-number">24969</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>    <span class="hljs-number">916</span>    <span class="hljs-number">92</span> ?        S    <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /init<br>liuchang <span class="hljs-number">24970</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">594684</span> <span class="hljs-number">37320</span> pts/<span class="hljs-number">1</span>    Ssl+ <span class="hljs-number">12</span>:<span class="hljs-number">17</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> /home/liuchang/.vscode<span class="hljs-literal">-server</span>/bin/b7886d7461186a5eac768481578c1d7ca80e2d21/node <span class="hljs-literal">-e</span>  const net = require(<span class="hljs-string">&#x27;net&#x27;</span>); process.stdin.pause(); const client = net.createConne<br>liuchang <span class="hljs-number">31668</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">37848</span>  <span class="hljs-number">3392</span> pts/<span class="hljs-number">4</span>    <span class="hljs-built_in">R</span>+   <span class="hljs-number">13</span>:<span class="hljs-number">32</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> <span class="hljs-built_in">ps</span> aux<br></code></pre></td></tr></table></figure>
+
+<h2 id="进程控制"><a href="#进程控制" class="headerlink" title="进程控制"></a>进程控制</h2><ol>
+<li>Linux中进程ID为 pid_t 类型，其本质是一个正整数。<blockquote>
+<p>getpid：获取当前进程的ID<br>getppid：获取父进程的ID<br>fork：创建一个新的进程</p>
+</blockquote>
+</li>
+</ol>
+<p><code>fork函数</code></p>
+<ul>
+<li>fork创建子进程，每个进程都对应一个属于自己的虚拟地址空间，子进程的地址空间是基于父进程的地址空间拷贝出来的，虽然是拷贝但是两个地址空间中存储的信息不可能是完全相同的。<ul>
+<li><pre><code class="hljs">fork调用成功后，父子进程的返回值不同，父进程返回值大于0，子进程的返回值等于0。
+</code></pre>
+</li>
+<li>exec族函数可以将进程中执行的函数和数据进行替换。</li>
+<li><strong>父子进程中是不能通过全局变量实现数据交互的，因为每个进程都有自己的地址空间，两个同名全局变量存储在不同的虚拟地址空间中，二者没有任何关联性。如果要进行进程间通信需要使用：管道，共享内存，本地套接字，内存映射区，消息队列等方式。</strong><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">int</span> number = <span class="hljs-number">10</span>;<br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <br>    cout&lt;&lt;<span class="hljs-string">&quot;创建子进程之前numeber = &quot;</span>&lt;&lt;number&lt;&lt;endl;<br><br>    <span class="hljs-type">pid_t</span> pid = fork();<br>    cout&lt;&lt;<span class="hljs-string">&quot;当前进程fork()返回值 &quot;</span>&lt;&lt;pid&lt;&lt;endl;<br><br>    <span class="hljs-comment">//如果是父进程</span><br>    <span class="hljs-keyword">if</span>(pid &gt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;我是父进程, pid = %d, number = %d\n&quot;</span>, <span class="hljs-built_in">getpid</span>(), ++number); <span class="hljs-comment">//11</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;父进程的父进程(终端进程), pid = %d\n&quot;</span>, <span class="hljs-built_in">getppid</span>());<br>        <span class="hljs-built_in">sleep</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(pid == <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-comment">// 子进程</span><br>        number += <span class="hljs-number">100</span>;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;我是子进程, pid = %d, number = %d\n&quot;</span>, <span class="hljs-built_in">getpid</span>(), number); <span class="hljs-comment">//110</span><br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;子进程的父进程, pid = %d\n&quot;</span>, <span class="hljs-built_in">getppid</span>());<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>父子进程虚拟地址空间：</p>
+<ul>
+<li>各自拥有独立的虚拟地址空间</li>
+<li>父子进程共享代码段（只读）</li>
+<li>采用写时拷贝计算创建子进程虚拟地址空间：写时拷贝指只创建虚拟地址空间，不为子进程分配实际的内存，父进程和子进程之间共享相同的物理内存页面。当子进程或父进程对虚拟地址空间对应的内存进行更改时才会分配实际内存。<ul>
+<li>节省内存开销</li>
+<li>提高创建进程效率</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>结束进程：<code>exit()或者_exit()函数,函数的参数相当于退出码</code></p>
+</blockquote>
+<blockquote>
+<p><strong>孤儿进程</strong>：父进程由于某种原因先退出了，子进程还在运行，这时候这个子进程就可以被称之为孤儿进程。当检测到某一个进程变成了孤儿进程，这时候系统中就会有一个固定的进程领养这个孤儿进程。<br><code>系统为什么要领养这个孤儿进程呢？</code>在子进程退出的时候, 进程中的用户区可以自己释放, 但是进程内核区的pcb资源自己无法释放，必须要由父进程来释放子进程的pcb资源，孤儿进程被领养之后，操作系统释放资源，这样可以避免系统资源的浪费。</p>
+</blockquote>
+<blockquote>
+<p><code>僵尸进程</code>：已经终止执行的进程，父进程没有它的回收资源，用户区资源已经被释放了，只是还占用着一些内核资源（PCB）。</p>
+<ul>
+<li>进程资源表浪费</li>
+<li>父进程资源泄露</li>
+<li>进程通信异常</li>
+<li>系统性能下降。</li>
+</ul>
+<p>如何避免僵尸进程？使用wait()或waitpid()系统调用来等待子进程的退出，并释放相关资源，来避免僵尸进程产生。</p>
+<ul>
+<li>wait()为阻塞方式。如果没有子进程退出, 函数会一直阻塞等待, 当检测到子进程退出了, 该函数阻塞解除回收子进程资源。这个函数被调用一次, 只能回收一个子进程的资源，如果有多个子进程需要资源回收, 函数需要被调用多次。</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>waitpid()是非阻塞方式。通过该函数可以控制回收子进程资源的方式是阻塞还是非阻塞，另外还可以通过该函数进行精准打击，可以精确指定回收某个或者某一类或者是全部子进程资源。</li>
+</ul>
+</blockquote>
+<h2 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h2><blockquote>
+<p>守护进程是一种在系统后台运行的特殊进程，独立的提供服务或执行任务，无需与用户交互，系统启动时自动启动，具有稳定性和长时间运行的能力。<br>守护进程PPID &#x3D; 1，没有控制终端。<br>创建守护进程的过程：</p>
+<ol>
+<li>创建子进程, 让父进程退出，子进程没有任何职务, 目的是让子进程最终变成一个会话, 最终就会得到守护进程。</li>
+<li>通过子进程创建新的会话，调用函数 setsid()，脱离控制终端。</li>
+<li>子进程调用fork成功，子进程调用exit(0)终止。由孙进程来充当守护进程，防止子进程成为会话首进程出现异常。</li>
+<li>改变当前进程的工作目录 (可选项, 不是必须要做的)。</li>
+<li>重新设置文件的掩码 (可选项, 不是必须要做的)。</li>
+<li>关闭&#x2F;重定向文件描述符 (不做也可以）</li>
+<li>孙进程忽略SIGCHLD信号</li>
+<li>根据实际需求在守护进程中执行某些特定的操作</li>
+</ol>
+</blockquote>
+<p>参考列表<br><a target="_blank" rel="noopener" href="https://subingwen.cn/linux/file-descriptor/">https://subingwen.cn/linux/file-descriptor/</a><br><a target="_blank" rel="noopener" href="https://space.bilibili.com/397638507/">https://space.bilibili.com/397638507/</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux学习五(进程)</div>
+      <div>https://cauccliu.github.io/2024/03/26/Linux学习五(进程)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E5%85%AD(%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1)/" title="Linux学习六(进程间通信)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux学习六(进程间通信)</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/STL%E6%B3%9B%E5%9E%8B%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0/" title="STL 泛型编程学习">
+                        <span class="hidden-mobile">STL 泛型编程学习</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

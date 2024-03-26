@@ -1,0 +1,755 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="STL 泛型编程学习STL标准库六大部件面向对象编程，将数据和函数放在一个类里面，但是STL将数据（容器）和函数（算法）进行了分离，所以两者在基础观念上就不一样。  容器：各种数据结构。 分配器：进行空间配置与管理。 算法：数据处理方法，如sort，search等。 迭代器：好比一种泛化的指针，作为数据和函数之间的桥梁。stl容器都有自己的专属迭代器。 适配器：三种。 仿函数：类似函数。   序列">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STL 泛型编程学习">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/STL%E6%B3%9B%E5%9E%8B%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="STL 泛型编程学习STL标准库六大部件面向对象编程，将数据和函数放在一个类里面，但是STL将数据（容器）和函数（算法）进行了分离，所以两者在基础观念上就不一样。  容器：各种数据结构。 分配器：进行空间配置与管理。 算法：数据处理方法，如sort，search等。 迭代器：好比一种泛化的指针，作为数据和函数之间的桥梁。stl容器都有自己的专属迭代器。 适配器：三种。 仿函数：类似函数。   序列">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/2c935f61477f4c9eb416757b991c304a.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/4d4cfef103174cf785d42a14c045a270.png">
+<meta property="article:published_time" content="2024-03-26T12:51:40.353Z">
+<meta property="article:modified_time" content="2024-03-26T12:52:46.359Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="读书笔记">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/2c935f61477f4c9eb416757b991c304a.png">
+  
+  
+  
+  <title>STL 泛型编程学习 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="STL 泛型编程学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 20:51" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">STL 泛型编程学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="STL-泛型编程学习"><a href="#STL-泛型编程学习" class="headerlink" title="STL 泛型编程学习"></a>STL 泛型编程学习</h1><h2 id="STL标准库六大部件"><a href="#STL标准库六大部件" class="headerlink" title="STL标准库六大部件"></a>STL标准库六大部件</h2><p><code>面向对象编程，将数据和函数放在一个类里面，但是STL将数据（容器）和函数（算法）进行了分离，所以两者在基础观念上就不一样。</code></p>
+<ol>
+<li>容器：各种数据结构。</li>
+<li>分配器：进行空间配置与管理。</li>
+<li>算法：数据处理方法，如sort，search等。</li>
+<li>迭代器：好比一种泛化的指针，作为数据和函数之间的桥梁。stl容器都有自己的专属迭代器。</li>
+<li>适配器：三种。</li>
+<li>仿函数：类似函数。<br><img src="https://img-blog.csdnimg.cn/direct/2c935f61477f4c9eb416757b991c304a.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+</ol>
+<hr>
+<p>序列容器：</p>
+<ul>
+<li>Array ：固定大小数组</li>
+<li>Vector：可扩容数组</li>
+<li>Deque：双端数组</li>
+<li>List：双链表，环状</li>
+<li>Forward-List：单链表</li>
+</ul>
+<p>关联容器：</p>
+<ul>
+<li>set&#x2F;multiset：红黑树：高度平衡二叉树</li>
+<li>map&#x2F;multimap：红黑树</li>
+<li>unorderedset&#x2F;unorderedmultiset：hash表，开链式方法解决冲突</li>
+<li>unorderedmap&#x2F;unorderedmultimap：hash表</li>
+</ul>
+<p><code>C++ STL标准库使用模板编程完成的</code></p>
+<ol>
+<li>面向对象编程：数据和函数操作放在一个类里面。</li>
+<li>模板编程：将数据和函数分开。为了适配各种数据类型，操作符重载，函数模板，占据非常重要性。</li>
+</ol>
+<h2 id="模板"><a href="#模板" class="headerlink" title="模板"></a>模板</h2><p><code>函数模板：一个通用函数，其函数类型和形参类型不具体指定，用一个虚拟的类型来代表，此通用函数即为函数模板</code><br><code>模板函数：为函数模板传参，根据实际传入的参数类型生成的一个重载函数即为模板函数，它是函数模板的一次实例化。</code><br><code>当函数重载与模板函数冲突的时候，优先调用普通函数，因为普通函数在编译期间就生成了，模板函数是运行时生成的，先到先得。</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><br><br><span class="hljs-comment">// 函数模板：交换两个变量</span><br><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MySwap</span><span class="hljs-params">(T &amp;a,T &amp;b)</span></span>&#123;<br>    T temp = a;<br>    a=b;<br>    b= temp;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MyPrint</span><span class="hljs-params">(T &amp;a,T &amp;b)</span></span>&#123;<br>    cout&lt;&lt;<span class="hljs-string">&quot;a = &quot;</span>&lt;&lt;a &lt;&lt; <span class="hljs-string">&quot;b = &quot;</span>&lt;&lt; b&lt;&lt;endl;<br>&#125; <br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> a = <span class="hljs-number">10</span>;<br>    <span class="hljs-type">int</span> b = <span class="hljs-number">20</span>;<br>    <span class="hljs-type">double</span> aa = <span class="hljs-number">10.2</span>;<br>    <span class="hljs-type">double</span> bb = <span class="hljs-number">20.1</span>;<br>    <span class="hljs-built_in">MyPrint</span>(a,b);<br>    <span class="hljs-built_in">MyPrint</span>(aa,bb);<br>    <span class="hljs-built_in">MySwap</span>(a,b);<br>    <span class="hljs-built_in">MySwap</span>(aa,bb);<br>    cout&lt;&lt;<span class="hljs-string">&quot;======已经完成交换======&quot;</span>&lt;&lt;endl;<br>    <span class="hljs-built_in">MyPrint</span>(a,b);<br>    <span class="hljs-built_in">MyPrint</span>(aa,bb);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="操作符重载"><a href="#操作符重载" class="headerlink" title="操作符重载"></a>操作符重载</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><span class="hljs-keyword">using</span> std::ostream;<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Complex</span>&#123;<br>    <span class="hljs-type">double</span> real;<br>    <span class="hljs-type">double</span> image;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Complex</span>(<span class="hljs-type">double</span> real,<span class="hljs-type">double</span> image):<span class="hljs-built_in">real</span>(real),<span class="hljs-built_in">image</span>(image)&#123;&#125;<br>    Complex <span class="hljs-keyword">operator</span>+(<span class="hljs-type">const</span> Complex&amp; other)&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Complex</span>(<span class="hljs-keyword">this</span>-&gt;real+other.real, <span class="hljs-keyword">this</span>-&gt;image+other.image);<br>    &#125;<br>    <span class="hljs-keyword">friend</span> ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(ostream&amp; os, <span class="hljs-type">const</span> Complex&amp; p);  <span class="hljs-comment">//声明operator&lt;&lt;为友元函数，可以访问私有成员</span><br>&#125;;<br><br>ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(ostream &amp;cout,<span class="hljs-type">const</span> Complex&amp; other)&#123;<br>    cout&lt;&lt;other.real &lt;&lt; <span class="hljs-string">&quot;,&quot;</span> &lt;&lt;other.image&lt;&lt;<span class="hljs-string">&quot;i&quot;</span>;<br>    <span class="hljs-keyword">return</span> cout;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-function">Complex <span class="hljs-title">c1</span><span class="hljs-params">(<span class="hljs-number">1.0f</span>,<span class="hljs-number">2.2f</span>)</span></span>;<br>    <span class="hljs-function">Complex <span class="hljs-title">c2</span><span class="hljs-params">(<span class="hljs-number">2.0f</span>,<span class="hljs-number">3.2f</span>)</span></span>;<br>    Complex c3=c1+c2;<br>    cout&lt;&lt;c3&lt;&lt;endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="右值引用与移动构造"><a href="#右值引用与移动构造" class="headerlink" title="右值引用与移动构造"></a>右值引用与移动构造</h2><p><code>移动语义能提高复制对象性能</code>：移动构造在进行复制构造的时候，只需要把指针指向原数据，然后把原数据的指针置空，再设置数据大小。相比复制构造要去动态分配内存、再递归调用每个元素的复制构造函数的速度快得多。<br><code>右值引用是C++语法层面表示移动语义的机制：std::move()可以把任意类型转为右值引用，右值引用不过是另一个类型，没有那么神秘，当参数类型为右值引用时，函数移动它的资源，即为“移动语义”。在汇编代码的层面来看，左值或右值引用的representation都是一个内存地址，如同指针一般；而在C++语法层面，通过区分两种引用类型，程序员能更好地利用右值。</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::vector&lt;<span class="hljs-type">int</span>&gt; vec_orange = &#123; <span class="hljs-number">1</span>, <span class="hljs-number">42</span>, <span class="hljs-number">23</span>, <span class="hljs-number">7</span>, <span class="hljs-number">13</span> &#125;;<br>std::vector&lt;<span class="hljs-type">int</span>&gt; vec_red = std::<span class="hljs-built_in">move</span>(vec_orange); <span class="hljs-comment">//移动</span><br></code></pre></td></tr></table></figure>
+<p>移动语义意味着把对象持有的资源或内容转移给另一个对象。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">my_vector</span><br>&#123;<br>    <span class="hljs-type">int</span>* data_;<br>    <span class="hljs-type">size_t</span> size_;<br>    <span class="hljs-type">size_t</span> capacity_;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 复制构造函数</span><br>    <span class="hljs-built_in">my_vector</span>(<span class="hljs-type">const</span> my_vector&amp; oth) :<br>        <span class="hljs-built_in">size_</span>(oth.size_), <br>        <span class="hljs-built_in">capacity_</span>(oth.capacity_)<br>    &#123;<br>        data_ = <span class="hljs-built_in">static_cast</span>&lt;<span class="hljs-type">int</span>*&gt;(<span class="hljs-built_in">malloc</span>(<span class="hljs-built_in">sizeof</span>(<span class="hljs-type">int</span>) * size_));<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; size_; ++i) &#123;<br>            data_[i] = oth.data_[i];<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 移动构造函数</span><br>    <span class="hljs-comment">// std::exchange(obj, new_val)的作用是返回obj的旧值，并把new_val赋值给obj</span><br>    <span class="hljs-comment">// 在移动oth的内容后，要把它置于一个有效状态。</span><br>    <span class="hljs-built_in">my_vector</span>(my_vector&amp;&amp; oth) :<br>        <span class="hljs-built_in">data_</span>(std::<span class="hljs-built_in">exchange</span>(oth.data_, <span class="hljs-literal">nullptr</span>)),<br>        <span class="hljs-built_in">size_</span>(std::<span class="hljs-built_in">exchange</span>(oth.size_, <span class="hljs-number">0</span>)), <br>        <span class="hljs-built_in">capacity_</span>(std::<span class="hljs-built_in">exchange</span>(oth.capacity_, <span class="hljs-number">0</span>))<br>    &#123;&#125;    <br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>C++智能指针std::unique_ptr，不可复制，只能移动。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">my_unique_ptr</span><br>&#123;<br>    T* ptr_;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 移动构造函数</span><br>    <span class="hljs-built_in">my_unique_ptr</span>(my_unique_ptr&amp;&amp; oth) :<br>        <span class="hljs-built_in">ptr_</span>(std::<span class="hljs-built_in">exchange</span>(oth.ptr_, <span class="hljs-literal">nullptr</span>)) &#123;&#125;<br><br>    <span class="hljs-comment">// 移动赋值函数</span><br>    my_unique_ptr&amp; <span class="hljs-keyword">operator</span>=(my_unique_ptr&amp;&amp; rhs)<br>    &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> != &amp;rhs) &#123;<br>            <span class="hljs-keyword">if</span> (ptr_) &#123; <span class="hljs-comment">// 释放当前拥有的指针</span><br>                <span class="hljs-keyword">delete</span> ptr_;<br>            &#125;<br>            ptr_ = std::<span class="hljs-built_in">exchange</span>(rhs.ptr_, <span class="hljs-literal">nullptr</span>); <span class="hljs-comment">// 夺取rhs的指针</span><br>        &#125;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 禁用复制构造函数、复制赋值函数</span><br>    <span class="hljs-built_in">my_unique_ptr</span>(<span class="hljs-type">const</span> my_unique_ptr&amp;) = <span class="hljs-keyword">delete</span>;<br>    my_unique_ptr&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> my_unique_ptr&amp;) = <span class="hljs-keyword">delete</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="空间配置器allocator"><a href="#空间配置器allocator" class="headerlink" title="空间配置器allocator"></a>空间配置器allocator</h2><ol>
+<li>SGI STL 的每一个容器都已经指定缺省的空间配置器是 alloc，标准的allocator只是在做简单的封装，效率不高，在插入比较小的元素类型的时候，实际上会浪费很多的空间。</li>
+<li>为了提高效率，SGI STL在对象的生成和释放过程中，对象构造和析构由std负责，但是内存的申请与释放，由SGI STL负责。（GNU 2.9版本）</li>
+<li>SGI的设计原则：<br> a. 向 system heap 要求空间，也就是堆空间。<br> b. 考虑多线程 (multi-threads) 状态。<br> c. 考虑内存不足时的应变措施。<br> d. 考虑过多“小型区块”可能造成的内存碎片 (fragment) 问题。使用两级空间配置器。</li>
+<li>两级空间配置器：<br> a. 当配置区空间大小超过 128bytes 时，称为足够大，使用第一级配置器，直接使用 malloc() 和 free()。处理内存不足的情况。<br> b. 当配置区块不大于 128bytes 时，为了降低额外负担，直接使用第二级配置器，采用复杂的 memory pool 处理方式。维护16个链表，内存池以malloc配置而得。</li>
+<li>二级配置器的内存池：每次配置一块内存，并维护对应的自由链表，负责空间配置和回收，内存链表上内存大小是8的倍数，共16个。</li>
+<li><strong>GNU4.9版本以后的allocator</strong>，反而用成了普通的new和delete。</li>
+</ol>
+<h2 id="迭代器Iterator"><a href="#迭代器Iterator" class="headerlink" title="迭代器Iterator"></a>迭代器Iterator</h2><ol>
+<li>为什么需要Iterator？ 因为算法和容器之间的处理过程需要迭代器起到一个润滑的作用。</li>
+<li>例如，vector的print和list的print算法，中间需要执行的步骤就是往后走，如果不用迭代器，print算法需要针对vector进行不同的设计，因为vector可以随机访存，可以直接读取内存的下一块地址，但是list不可以，需要用指针进行操作，为了使list也可以用++这个符号，就要使用迭代器完成这个功能。</li>
+<li>当算法变的复杂的时候，需要迭代器完成更多的数据格式，移动方式等等问题的时候，迭代器就需要具备五个必须得条件，完成特性萃取，告诉算法当前数据的迭代器特性是怎么样的，算法从而得出一个最优化的方案。</li>
+</ol>
+<p><code>下面的代码可以单独打印数组和链表</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 实现一个简单的双向循环List</span><br><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">List_Node</span>&#123;<br>    List_Node&lt;T&gt;* prev;<br>    List_Node&lt;T&gt;* next;<br>    T val;<br>&#125;;<br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MyList</span>&#123;<br>    <span class="hljs-keyword">typedef</span> List_Node&lt;T&gt;* pointer;<br>    <span class="hljs-built_in">MyList</span>()&#123;<br>        node = <span class="hljs-keyword">new</span> List_Node&lt;T&gt;;<br>        node-&gt;next = node;<br>        node-&gt;prev = node;<br>    &#125;<br><br>    <span class="hljs-function">pointer <span class="hljs-title">begin</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-keyword">return</span> node-&gt;next;<br>    &#125;<br><br>    <span class="hljs-function">pointer <span class="hljs-title">end</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-keyword">return</span> node;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">insert</span><span class="hljs-params">(pointer position, T val)</span></span>&#123;<br>        pointer tmp = <span class="hljs-keyword">new</span> List_Node&lt;T&gt;;<br>        tmp-&gt;val = val;<br>        tmp-&gt;next = position-&gt;next;<br>        tmp-&gt;prev = position;<br>        position-&gt;next-&gt;prev = tmp;<br>        position-&gt;next = tmp;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">erase</span><span class="hljs-params">(pointer position)</span></span>&#123;<br>        position-&gt;next-&gt;prev = position-&gt;prev;<br>        position-&gt;prev-&gt;next = position-&gt;next;<br>        <span class="hljs-keyword">delete</span> position;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">push_back</span><span class="hljs-params">(T val)</span></span>&#123;<br>        <span class="hljs-built_in">insert</span>(node-&gt;prev, val);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">pop_back</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-built_in">erase</span>(node-&gt;prev);<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    pointer node; <span class="hljs-comment">//双向循环链表，代表链表尾节点</span><br>&#125;;<br><br><br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printVec</span><span class="hljs-params">(T begin, T end)</span></span>&#123;<br>    <span class="hljs-keyword">while</span>(begin!=end)&#123;<br>        cout&lt;&lt;*begin&lt;&lt;endl;<br>        begin++;<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printList</span><span class="hljs-params">(T begin, T end)</span></span>&#123;<br>    <span class="hljs-keyword">while</span>(begin!=end)&#123;<br>        cout&lt;&lt;begin-&gt;val&lt;&lt;endl;<br>        begin=begin-&gt;next;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> v[<span class="hljs-number">5</span>] = &#123;<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>&#125;;<br>    <span class="hljs-built_in">printVec</span>(v,v+<span class="hljs-number">5</span>);<br><br>    MyList&lt;<span class="hljs-type">int</span>&gt; list;<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">10</span>);<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">10</span>);<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">20</span>);<br>    list.<span class="hljs-built_in">pop_back</span>();<br>    <span class="hljs-built_in">printList</span>(list.<span class="hljs-built_in">begin</span>(),list.<span class="hljs-built_in">end</span>());<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">20</span>);<br>    <span class="hljs-built_in">printList</span>(list.<span class="hljs-built_in">begin</span>(),list.<span class="hljs-built_in">end</span>());<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>想要一个函数既能打印数组，又能打印链表，这个时候就要用到迭代器</code><br><code>迭代器就是连接容器和算法的桥梁: 1.链表和数组就是容器 2.打印函数就可以理解为算法。他们的连接方式是不同的。迭代器就在它们中间加了一个中间层。</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">template</span>&lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">List_Node</span>&#123;<br>    List_Node&lt;T&gt;* prev;<br>    List_Node&lt;T&gt;* next;<br>    T val;<br>&#125;;<br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">List_iterator</span>&#123;<br>    <span class="hljs-keyword">typedef</span> List_iterator&lt;T&gt; iterator;<br>    <span class="hljs-keyword">typedef</span> T value;<br>    <span class="hljs-keyword">typedef</span> T&amp; reference;<br>    List_Node&lt;T&gt;* node;<br><br>    <span class="hljs-built_in">List_iterator</span>():<span class="hljs-built_in">node</span>(<span class="hljs-literal">nullptr</span>)&#123;&#125;<br>    <span class="hljs-built_in">List_iterator</span>(List_Node&lt;T&gt;* node):<span class="hljs-built_in">node</span>(node)&#123;&#125;<br><br>    <span class="hljs-comment">// 前缀++ ++i</span><br>    iterator&amp; <span class="hljs-keyword">operator</span>++() &#123;<br>        node = node-&gt;next;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br>    <br>    <span class="hljs-comment">// 后缀++ i++ 不能加引用</span><br>    iterator <span class="hljs-keyword">operator</span>++(<span class="hljs-type">int</span>) &#123;<br>        iterator tmp=*<span class="hljs-keyword">this</span>;<br>        node = node-&gt;next;<br>        <span class="hljs-keyword">return</span> tmp;<br>    &#125;<br><br>    iterator&amp; <span class="hljs-keyword">operator</span>--() &#123;<br>        node = node-&gt;prev;<br>        <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>    &#125;<br><br>    iterator&amp; <span class="hljs-keyword">operator</span>--(<span class="hljs-type">int</span>) &#123;<br>        iterator tmp=*<span class="hljs-keyword">this</span>;<br>        node = node-&gt;prev;<br>        <span class="hljs-keyword">return</span> tmp;<br>    &#125;<br><br>    <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span>== (iterator&amp; other)&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>-&gt;node == other-&gt;node;<br>    &#125;<br><br>    <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span>!= (iterator&amp; other)&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>-&gt;node != other-&gt;node;<br>    &#125;<br><br>    iterator* <span class="hljs-keyword">operator</span>-&gt; ()&#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;<br>    &#125;<br><br>    reference <span class="hljs-keyword">operator</span>*()&#123;<br>        <span class="hljs-keyword">return</span> node-&gt;val;<br>    &#125;<br>&#125;;<br><br><br><br><span class="hljs-comment">// 实现一个简单的双向循环List</span><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MyList</span>&#123;<br>    <span class="hljs-keyword">typedef</span> List_Node&lt;T&gt;* pointer;<br>    <span class="hljs-keyword">typedef</span> List_iterator&lt;T&gt; iterator;<br>    <span class="hljs-built_in">MyList</span>()&#123;<br>        node = <span class="hljs-keyword">new</span> List_Node&lt;T&gt;;<br>        node-&gt;next = node;<br>        node-&gt;prev = node;<br>    &#125;<br><br>    <span class="hljs-function">iterator <span class="hljs-title">begin</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-keyword">return</span> node-&gt;next;<br>    &#125;<br><br>    <span class="hljs-function">iterator <span class="hljs-title">end</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-keyword">return</span> node;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">insert</span><span class="hljs-params">(iterator position, T val)</span></span>&#123;<br>        pointer tmp = <span class="hljs-keyword">new</span> List_Node&lt;T&gt;;<br>        tmp-&gt;val = val;<br>        tmp-&gt;next = position.node-&gt;next;<br>        tmp-&gt;prev = position.node;<br>        position.node-&gt;next-&gt;prev = tmp;<br>        position.node-&gt;next = tmp;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">erase</span><span class="hljs-params">(iterator position)</span></span>&#123;<br>        position.node-&gt;next-&gt;prev = position.node-&gt;prev;<br>        position.node-&gt;prev-&gt;next = position.node-&gt;next;<br>        <span class="hljs-keyword">delete</span> position.node;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">push_back</span><span class="hljs-params">(T val)</span></span>&#123;<br>        <span class="hljs-built_in">insert</span>(--<span class="hljs-built_in">end</span>(), val);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">pop_back</span><span class="hljs-params">()</span></span>&#123;<br>        <span class="hljs-built_in">erase</span>(--<span class="hljs-built_in">end</span>());<br>    &#125;<br><br><span class="hljs-keyword">private</span>:<br>    pointer node; <span class="hljs-comment">//双向循环链表，代表链表尾节点</span><br>&#125;;<br><br><br><br><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> T&gt;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printContainer</span><span class="hljs-params">(T begin, T end)</span></span>&#123;<br>    <span class="hljs-keyword">while</span>(begin!=end)&#123;<br>        cout&lt;&lt;*begin&lt;&lt;endl;<br>        ++begin;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> v[<span class="hljs-number">5</span>] = &#123;<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>&#125;;<br>    <span class="hljs-built_in">printContainer</span>(v,v+<span class="hljs-number">5</span>);<br><br>    MyList&lt;<span class="hljs-type">int</span>&gt; list;<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">10</span>);<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">10</span>);<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">20</span>);<br>    list.<span class="hljs-built_in">pop_back</span>();<br>    <span class="hljs-built_in">printContainer</span>(list.<span class="hljs-built_in">begin</span>(),list.<span class="hljs-built_in">end</span>());<br>    list.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">20</span>);<br>    <span class="hljs-built_in">printContainer</span>(list.<span class="hljs-built_in">begin</span>(),list.<span class="hljs-built_in">end</span>());<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="type-traits-类型萃取"><a href="#type-traits-类型萃取" class="headerlink" title="type traits 类型萃取"></a>type traits 类型萃取</h2><ol>
+<li>迭代器是算法与容器之间的桥梁，如果算法需要知道操作的容器里面的数据类型？</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">vector&lt;<span class="hljs-type">int</span>&gt;:: <span class="hljs-function">iterator</span><br><span class="hljs-function"><span class="hljs-title">sort</span><span class="hljs-params">(vec.begin(), vec.end())</span></span>; <span class="hljs-comment">// 怎么判断数据类型？</span><br></code></pre></td></tr></table></figure>
+<ol start="2">
+<li><strong>算法需要迭代器提供的东西，由萃取器负责获取，还是一种中间层思想</strong>：萃取需要的5种数据类型：</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-type">ptrdiff_t</span>				   difference_type;<br>   <span class="hljs-keyword">typedef</span> std::bidirectional_iterator_tag	 iterator_category;<br>   <span class="hljs-keyword">typedef</span> _Tp				value_type;<br>   <span class="hljs-keyword">typedef</span> _Tp*				pointer;<br>   <span class="hljs-keyword">typedef</span> _Tp&amp;				reference;<br></code></pre></td></tr></table></figure>
+<p>iterator_category：迭代器的分类，指它的移动性质，表示迭代器的类型（如输入迭代器、输出迭代器、前向迭代器、双向迭代器、随机访问迭代器等）。这个信息可以方便算法采用最佳的移动方式。<br>value_type：迭代器指向的值类型。告诉算法是int 还是 string？<br>difference_type：迭代器之间的距离类型，通常使用ptrdiff_t。是inter？还是<br>pointer：指向value_type的指针类型。<br>reference：value_type的引用类型。</p>
+<ol start="3">
+<li>萃取机：中间层：统一指针和Iterator class的特性问题。</li>
+</ol>
+<h2 id="可以扩容的动态数组vector"><a href="#可以扩容的动态数组vector" class="headerlink" title="可以扩容的动态数组vector"></a>可以扩容的动态数组vector</h2><p>vector插入的方法：C++11之后，会直接调用emplace_back();</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs cpp">	vector&lt;<span class="hljs-type">int</span>&gt; vec;<br>    vec.<span class="hljs-built_in">push_back</span>(<span class="hljs-number">1</span>); <span class="hljs-comment">// 运行到下面</span><br><br><br><span class="hljs-function"><span class="hljs-type">void</span></span><br><span class="hljs-function">      <span class="hljs-title">push_back</span><span class="hljs-params">(<span class="hljs-type">const</span> value_type&amp; __x)</span> <span class="hljs-comment">//添加左值时，这个函数会被调用，</span></span><br><span class="hljs-function">      </span>&#123;<br>	<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish != <span class="hljs-keyword">this</span>-&gt;_M_impl._M_end_of_storage)<br>	  &#123;<br>	    _Alloc_traits::<span class="hljs-built_in">construct</span>(<span class="hljs-keyword">this</span>-&gt;_M_impl, <span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish,<br>				     __x); <span class="hljs-comment">//_Alloc_traits::construct完成的，它通常会调用元素类型的复制构造函数。</span><br>	    ++<span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish;<br>	  &#125;<br>	<span class="hljs-keyword">else</span><br>	  _M_realloc_insert(<span class="hljs-built_in">end</span>(), __x);<br>      &#125;<br><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> __cplusplus &gt;= 201103L <span class="hljs-comment">//C++11及以后的版本，push_back提供了一个接受右值引用参数的重载版本。</span></span><br>      <span class="hljs-function"><span class="hljs-type">void</span></span><br><span class="hljs-function">      <span class="hljs-title">push_back</span><span class="hljs-params">(value_type&amp;&amp; __x)</span></span><br><span class="hljs-function">      </span>&#123; <span class="hljs-built_in">emplace_back</span>(std::<span class="hljs-built_in">move</span>(__x)); &#125;<br>      <span class="hljs-comment">//push_back会调用emplace_back，并将右值引用传递给它。在emplace_back内部，元素会被直接在vector的内存中构造，使用的是元素类型的移动构造函数。</span><br>      <span class="hljs-comment">//对于可移动的对象，可以避免复制构造函数的调用，而是利用移动构造函数来构造新元素，通常这会更高效，因为它可以转移资源而不是复制资源。</span><br>&#125;<br><br><br>emplace_back代码：<br><br>vector&lt;_Tp, _Alloc&gt;::<br>      <span class="hljs-built_in">emplace_back</span>(_Args&amp;&amp;... __args)<br>      &#123;<br>	<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish != <span class="hljs-keyword">this</span>-&gt;_M_impl._M_end_of_storage)<br>	  &#123;<br>	    _Alloc_traits::<span class="hljs-built_in">construct</span>(<span class="hljs-keyword">this</span>-&gt;_M_impl, <span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish,<br>				     std::forward&lt;_Args&gt;(__args)...);<br>	    ++<span class="hljs-keyword">this</span>-&gt;_M_impl._M_finish;<br>	  &#125;<br>	<span class="hljs-keyword">else</span><br>	  _M_realloc_insert(<span class="hljs-built_in">end</span>(), std::forward&lt;_Args&gt;(__args)...);<br><br>可以看到这里在元素个数小于vector容量的时候，直接在尾部进行插入，否则就会调用realloc进行扩容。<br>而 _M_realloc_insert中会调用_M_check_len函数进行容量计算：<br><span class="hljs-type">const</span> size_type __len =_M_check_len(<span class="hljs-built_in">size_type</span>(<span class="hljs-number">1</span>), <span class="hljs-string">&quot;vector::_M_realloc_insert&quot;</span>);<br><br>size_type<br>      _M_check_len(size_type __n, <span class="hljs-type">const</span> <span class="hljs-type">char</span>* __s) <span class="hljs-type">const</span><br>      &#123;<br>	<span class="hljs-keyword">if</span> (<span class="hljs-built_in">max_size</span>() - <span class="hljs-built_in">size</span>() &lt; __n)<br>	  __throw_length_error(__N(__s));<br><br>	<span class="hljs-type">const</span> size_type __len = <span class="hljs-built_in">size</span>() + std::<span class="hljs-built_in">max</span>(<span class="hljs-built_in">size</span>(), __n); <span class="hljs-comment">// 这里就是若扩容两倍还不够，就把插入的内容大小加上原来大小。</span><br>	<span class="hljs-keyword">return</span> (__len &lt; <span class="hljs-built_in">size</span>() || __len &gt; <span class="hljs-built_in">max_size</span>()) ? <span class="hljs-built_in">max_size</span>() : __len;<br>      &#125;<br> <br>扩容之后进行拷贝<br><br></code></pre></td></tr></table></figure>
+<p>vector的扩容机制：</p>
+<ul>
+<li>有的是1.5倍扩容</li>
+<li>有的是2倍扩容，但是它这个扩容的过程并不是绝对的，如果原本是五个，但是后面要插入20个，扩容到10个也不够，就扩容到25个，刚好满足这次添加20个的需要。</li>
+</ul>
+<p><code>vector的迭代器就是一个指针。</code></p>
+<h2 id="双端开口的容器deque"><a href="#双端开口的容器deque" class="headerlink" title="双端开口的容器deque"></a>双端开口的容器deque</h2><ol>
+<li>stack和queue基于deque进行实现的。</li>
+<li>deque两端开口，可以push_front push_back()；连续容器，支持随机访问内存。</li>
+<li>deque由一段一段定量的连续空间构成，串接在deque控制中心上，维护其整体连续的假象，控制中心是一个vector，增长按照普通的vector增长方式进行。</li>
+<li>deuque本身就有40个字节。</li>
+<li>deque做了大量的运算符重载去完成，模拟一种连续的假象。要特别注意边界区的考虑。<br><img src="https://img-blog.csdnimg.cn/direct/4d4cfef103174cf785d42a14c045a270.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>stack 堆，queue 队列：底层都是deque。都不提供遍历，因为没有迭代器。</li>
+<li>优先队列： 默认采用大根堆排列，可以按照优先级进行输出。</li>
+</ol>
+<h2 id="Set-Map"><a href="#Set-Map" class="headerlink" title="Set&#x2F;Map"></a>Set&#x2F;Map</h2><ol>
+<li>二叉搜索树：节点值大于左子树每个节点的值，小于右子树每个节点的值。</li>
+<li>平衡二叉搜索树：保证树的深度为O(logN)。任何节点的左右子树高度相差最多为1.</li>
+<li>红黑树是一种广泛使用的平衡二叉搜索树：<blockquote>
+<p>每个节点都有颜色，非黑即红。<br>根节点为黑。<br>父子两节点不能同时为红。<br>任意节点到NULL的任何路径，所含黑节点数必须相同。</p>
+</blockquote>
+</li>
+<li>set和map底层用的红黑树，插入的时间复杂度是logN。</li>
+<li>set的key必须独一无二，multiset的key可以重复。set的迭代器是const类型，不允许改变内容。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> _Rb_tree&lt;key_type, value_type, _Identity&lt;value_type&gt;,<br>		       key_compare, _Key_alloc_type&gt; _Rep_type;<br>      _Rep_type _M_t;  <span class="hljs-comment">// Red-black tree representing set.</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="unordered-set-unordered-map"><a href="#unordered-set-unordered-map" class="headerlink" title="unordered_set&#x2F;unordered_map"></a>unordered_set&#x2F;unordered_map</h2><ol>
+<li>底层采用hash表，采用开链式方法解决冲突。</li>
+</ol>
+<p>参考列表<br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Ga41177x8">https://www.bilibili.com/video/BV1Ga41177x8</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/347977300">https://zhuanlan.zhihu.com/p/347977300</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1pG4y197GW">https://www.bilibili.com/video/BV1pG4y197GW</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/" class="category-chain-item">语言基础</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" class="print-no-link">#读书笔记</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>STL 泛型编程学习</div>
+      <div>https://cauccliu.github.io/2024/03/26/STL泛型编程学习/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%BA%94(%E8%BF%9B%E7%A8%8B)/" title="Linux学习五(进程)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux学习五(进程)</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E5%9B%9B(GDB)/" title="Linux学习四(GDB)">
+                        <span class="hidden-mobile">Linux学习四(GDB)</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

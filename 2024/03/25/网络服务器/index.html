@@ -1,0 +1,761 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="如果要让服务器服务于多个客户端 如果要让服务器服务于多个客户端 多线程服务器 IO多路复用 select poll epoll是如何获取网络事件的？   Reactor反应堆模式 单Reactor单线程 单Reactor多线程 多Reactor多线程   Proactor反应堆模式 阻塞、非阻塞、同步、异步IO      多线程服务器 最简单的想法就是多线程：为每一个连接创建线程。 创建进程也可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络服务器">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/25/%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="如果要让服务器服务于多个客户端 如果要让服务器服务于多个客户端 多线程服务器 IO多路复用 select poll epoll是如何获取网络事件的？   Reactor反应堆模式 单Reactor单线程 单Reactor多线程 多Reactor多线程   Proactor反应堆模式 阻塞、非阻塞、同步、异步IO      多线程服务器 最简单的想法就是多线程：为每一个连接创建线程。 创建进程也可以">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://pic.imgdb.cn/item/660180009f345e8d03d2ebc8.webp">
+<meta property="og:image" content="https://pic.imgdb.cn/item/6601800a9f345e8d03d33998.webp">
+<meta property="og:image" content="https://pic.imgdb.cn/item/6601808d9f345e8d03d70f74.png">
+<meta property="article:published_time" content="2024-03-25T13:48:34.817Z">
+<meta property="article:modified_time" content="2024-03-25T13:51:51.800Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/660180009f345e8d03d2ebc8.webp">
+  
+  
+  
+  <title>网络服务器 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="网络服务器"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-25 21:48" pubdate>
+          March 25, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">网络服务器</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="如果要让服务器服务于多个客户端"><a href="#如果要让服务器服务于多个客户端" class="headerlink" title="如果要让服务器服务于多个客户端"></a>如果要让服务器服务于多个客户端</h1><ul>
+<li><a href="#%E5%A6%82%E6%9E%9C%E8%A6%81%E8%AE%A9%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%9C%8D%E5%8A%A1%E4%BA%8E%E5%A4%9A%E4%B8%AA%E5%AE%A2%E6%88%B7%E7%AB%AF">如果要让服务器服务于多个客户端</a><ul>
+<li><a href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8">多线程服务器</a></li>
+<li><a href="#io%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8">IO多路复用</a><ul>
+<li><a href="#select-poll-epoll%E6%98%AF%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E7%BD%91%E7%BB%9C%E4%BA%8B%E4%BB%B6%E7%9A%84">select poll epoll是如何获取网络事件的？</a></li>
+</ul>
+</li>
+<li><a href="#reactor%E5%8F%8D%E5%BA%94%E5%A0%86%E6%A8%A1%E5%BC%8F">Reactor反应堆模式</a><ul>
+<li><a href="#%E5%8D%95reactor%E5%8D%95%E7%BA%BF%E7%A8%8B">单Reactor单线程</a></li>
+<li><a href="#%E5%8D%95reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B">单Reactor多线程</a></li>
+<li><a href="#%E5%A4%9Areactor%E5%A4%9A%E7%BA%BF%E7%A8%8B">多Reactor多线程</a></li>
+</ul>
+</li>
+<li><a href="#proactor%E5%8F%8D%E5%BA%94%E5%A0%86%E6%A8%A1%E5%BC%8F">Proactor反应堆模式</a><ul>
+<li><a href="#%E9%98%BB%E5%A1%9E%E9%9D%9E%E9%98%BB%E5%A1%9E%E5%90%8C%E6%AD%A5%E5%BC%82%E6%AD%A5io">阻塞、非阻塞、同步、异步IO</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="多线程服务器"><a href="#多线程服务器" class="headerlink" title="多线程服务器"></a>多线程服务器</h2><ul>
+<li>最简单的想法就是<code>多线程</code>：为每一个连接创建线程。<ul>
+<li>创建进程也可以，但是线程更加轻量级。</li>
+<li>现在也可以用<code>协程</code>实现服务器。</li>
+</ul>
+</li>
+<li>进一步：多线程变成<code>线程池, 减少线程不停创建销毁的开销，资源复用</code>。<ul>
+<li>问题出现？ 一个线程需要处理多个连接的业务。怎么才能让线程高效的处理多个连接的业务？<ul>
+<li>多线程时：线程一般采用read -&gt; 业务处理 -&gt; send的处理流程。如果当前没有数据可读，线程会阻塞在read上，这种阻塞不会影响其他线程。</li>
+<li>当线程池存在时：线程read，如果没有数据，不能阻塞，如果这个时候阻塞，线程就没办法处理其他连接的业务了。</li>
+<li>解决这个问题的方案：<ul>
+<li>最简单的方式:socket设置为非阻塞，线程不断地轮询调用 read 操作来判断是否有数据。缺点是比较粗暴，轮询非常消耗cpu，随着线程处理连接的变多，轮询的效率就会变低。<code>线程并不知道当前连接是否有数据可读，需要每次通过read去试探</code>。</li>
+<li><strong>IO多路复用</strong>：<code>IO多路复用则只有当连接上有数据的时候，线程才会发起请求</code>。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="IO多路复用"><a href="#IO多路复用" class="headerlink" title="IO多路复用"></a>IO多路复用</h2><p>IO多路复用技术：用一个系统调用函数来监听我们关心的连接，也就说可以在一个监控线程里面监控很多的连接。<code>select/poll/epoll 就是内核提供给用户态的多路复用系统调用，线程可以通过一个系统调用函数从内核中获取多个事件。</code></p>
+<h3 id="select-poll-epoll是如何获取网络事件的？"><a href="#select-poll-epoll是如何获取网络事件的？" class="headerlink" title="select poll epoll是如何获取网络事件的？"></a>select poll epoll是如何获取网络事件的？</h3><p>获取事件时，把关心的连接传给内核，再由内核检测：</p>
+<ul>
+<li>如果没有事件发生，线程只需阻塞在这个系统调用，而无需像前面的线程池方案那样轮训调用 read 操作来判断是否有数据。</li>
+<li>如果有事件发生，内核会返回产生了事件的连接，线程就会从阻塞状态返回，然后在用户态中再处理这些连接对应的业务即可。</li>
+</ul>
+<p>IO多路复用就是高性能网络的基础，单纯的使用IO多路复用API，实际上使用的面向过程的方法去写代码。</p>
+<p>IO多路复用下，内核不断地去巡检事件，然后通知处理，比较理想的方式是以一种<code>回调</code>的方式去处理事件，事件做完以后通知主线程。<code>Reactor和Proactor本质都是回调，区别是回调的方式是异步还是同步的。</code></p>
+<h2 id="Reactor反应堆模式"><a href="#Reactor反应堆模式" class="headerlink" title="Reactor反应堆模式"></a>Reactor反应堆模式</h2><p>Reactor：IO多路复用监听事件，收到事件后，根据事件类型分配给某个进程&#x2F;线程。来了一个事件，Reactor 就有相对应的反应&#x2F;响应。是<code>同步IO</code>的处理方式。</p>
+<p>Reactor 模式主要由 Reactor 和处理资源池这两个核心部分组成:</p>
+<ul>
+<li>Reactor 负责监听和分发事件，事件类型包含连接事件、读写事件；</li>
+<li>处理资源池负责处理事件，如 read -&gt; 业务逻辑 -&gt; send；</li>
+</ul>
+<p>Reactor和业务处理都可以是多个，也就有了多种处理方案：</p>
+<ul>
+<li>单 Reactor 单进程 &#x2F; 线程；</li>
+<li>单 Reactor 多进程 &#x2F; 线程；</li>
+<li>多 Reactor 单进程 &#x2F; 线程；不常用，相比于单Reactor单线程，复杂且没有性能优势。</li>
+<li>多 Reactor 多进程 &#x2F; 线程；</li>
+</ul>
+<h3 id="单Reactor单线程"><a href="#单Reactor单线程" class="headerlink" title="单Reactor单线程"></a>单Reactor单线程</h3><p><img src="https://pic.imgdb.cn/item/660180009f345e8d03d2ebc8.webp" srcset="/img/loading.gif" lazyload alt="单Reactor单线程"></p>
+<ul>
+<li>Reactor 对象的作用是监听和分发事件，通过<code>IO多路复用接口监听事件</code>，dispatch是分发事件操作。具体分发给Acceptor对象还是Handler对象，还要看收到的事件类型。</li>
+<li>Acceptor对象的作用是获取连接,Acceptor对象会通过<code>accept方法获取连接，并创建一个Handler对象来处理后续的响应事件</code>。回调方法。</li>
+<li>Handler 对象的作用是处理业务，完成完整的业务流程。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>无法利用CPU多核优势。</li>
+<li>Handler 对象在业务处理时，整个进程是无法处理其他连接的事件的，如果业务处理耗时比较长，那么就造成响应的延迟。</li>
+</ul>
+<p><code>单 Reactor 单进程的方案不适用计算机密集型的场景，只适用于业务处理非常快速的场景。</code></p>
+<p><strong>Redis 是由 C 语言实现的，它采用的正是「单 Reactor 单进程」的方案，因为 Redis 业务处理主要是在内存中完成，操作的速度是很快的，性能瓶颈不在 CPU 上，所以 Redis 对于命令的处理是单进程的方案。</strong></p>
+<h3 id="单Reactor多线程"><a href="#单Reactor多线程" class="headerlink" title="单Reactor多线程"></a>单Reactor多线程</h3><p><img src="https://pic.imgdb.cn/item/6601800a9f345e8d03d33998.webp" srcset="/img/loading.gif" lazyload alt="单Reactor多线程"></p>
+<ul>
+<li>Reactor 对象的作用是监听和分发事件，通过<code>IO多路复用接口监听事件</code>，dispatch是分发事件操作。具体分发给Acceptor对象还是Handler对象，还要看收到的事件类型。</li>
+<li>如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；</li>
+<li>如果不是连接建立事件， 则交由当前连接对应的Handler对象来进行响应；只不过，Handler对象不再处理具体业务，而是开辟新的线程去处理业务逻辑。</li>
+</ul>
+<p><strong>因为一个 Reactor 对象承担所有事件的监听和响应，而且只在主线程中运行，在面对瞬间高并发的场景时，容易成为性能的瓶颈的地方。</strong></p>
+<h3 id="多Reactor多线程"><a href="#多Reactor多线程" class="headerlink" title="多Reactor多线程"></a>多Reactor多线程</h3><p><img src="https://pic.imgdb.cn/item/6601808d9f345e8d03d70f74.png" srcset="/img/loading.gif" lazyload alt="alt text"></p>
+<ul>
+<li>主线程中的 MainReactor 对象通过 select 监控连接建立事件，收到事件后通过 Acceptor 对象中的 accept 获取连接，将新的连接分配给某个子线程；</li>
+<li>子线程中的 SubReactor 对象将 MainReactor 对象分配的连接加入select继续进行监听，并创建一个Handler用于处理连接的响应事件。</li>
+<li>如果有新的事件发生时，SubReactor 对象会调用当前连接对应的 Handler 对象来进行响应。</li>
+</ul>
+<h2 id="Proactor反应堆模式"><a href="#Proactor反应堆模式" class="headerlink" title="Proactor反应堆模式"></a>Proactor反应堆模式</h2><p><code>Proactor是异步网络模式。</code></p>
+<h3 id="阻塞、非阻塞、同步、异步IO"><a href="#阻塞、非阻塞、同步、异步IO" class="headerlink" title="阻塞、非阻塞、同步、异步IO"></a>阻塞、非阻塞、同步、异步IO</h3><ul>
+<li>阻塞：程序执行 read ，线程会被阻塞，一直等到内核数据准备好，并把数据从内核缓冲区拷贝到应用程序的缓冲区中，当拷贝过程完成，read 才会返回。需要等待<code>内核数据准备好</code>和<code>数据从内核态拷贝到用户态</code>两个过程。</li>
+<li>非阻塞：<code>read 请求在数据未准备好的情况下立即返回</code>，可以继续往下执行，此时<code>应用程序不断轮询内核</code>，直到数据准备好，内核将数据拷贝到应用程序缓冲区，read 调用才可以获取到结果。所以说非阻塞等待的是<code>数据从内核态拷贝到用户态</code>。</li>
+<li>同步 I&#x2F;O：无论阻塞还是非阻塞都是同步调用，Reactor模式就是同步非阻塞IO方式。</li>
+<li>异步 I&#x2F;O：<code>内核数据准备好</code>和<code>数据从内核态拷贝到用户态</code>两个过程都不等待。内核自动将数据从内核空间拷贝到用户空间，这个拷贝过程同样是异步的，<code>内核自动完成的。</code></li>
+</ul>
+<p>你去打印店，打印东西，一个个排队打印，是同步阻塞。<br>同步非阻塞是什么时候有时间，店家给你打电话。<br>异步操作：店家打印好给你打电话去取。<br><code>同步非阻塞是半托管，异步非阻塞是全托管。</code></p>
+<p>看起来Proactor这种方式比Reactor这种模式更好。</p>
+<ul>
+<li>在 Linux下的异步I&#x2F;O是不完善的， aio系列函数是由 POSIX 定义的异步操作接口，不是真正的操作系统级别支持的，而是在用户空间模拟出来的异步，并且仅仅支持基于本地文件的 aio 异步操作，网络编程中的socket是不支持的，这也使得<code>基于Linux的高性能网络程序都是使用Reactor方案。</code></li>
+<li>Windows 里实现了一套完整的支持socket的异步编程接口，这套接口就是<code>IOCP，是由操作系统级别实现的异步I/O，真正意义上异步I/O，因此在Windows里实现高性能网络程序可以使用效率更高的Proactor方案</code>。</li>
+</ul>
+<p><strong>从技术上看：IOCP比EPOLL更智能，全包了。但是Epoll的效率高于IOCP？IOCP确实看上去更智能，啥事都干完了，但同异步情况来看，并不见得就比Epoll要好。无非就是收包这步系统做了。linux内核的协议栈实现要优于windows，因为linux本身就是服务器的架构。</strong></p>
+<p>现阶段网络上比较流行的网络库中：libevent和boost.asio，相对轻量级一点。</p>
+<ul>
+<li>libevent基于Reactor。libevent是一个C语言写的网络库，官方主要支持的是类linux操作系统，最新的版本添加了对windows的IOCP的支持。在跨平台方面主要通过select模型来进行支持。</li>
+<li>Boost.asio基于Proactor。Boost.Asio类库，其就是以Proactor这种设计模式来实现，是C++的库，用起来更爽。</li>
+</ul>
+<p>参考链接</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/368089289">https://zhuanlan.zhihu.com/p/368089289</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yand789/article/details/10906329">https://blog.csdn.net/yand789/article/details/10906329</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="category-chain-item">网络编程</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/HTTP/" class="print-no-link">#HTTP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>网络服务器</div>
+      <div>https://cauccliu.github.io/2024/03/25/网络服务器/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 25, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/25/YOLO5Face/" title="YOLO5Face学习">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">YOLO5Face学习</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/25/asio%E5%AE%9E%E7%8E%B0http%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="asio实现http服务器">
+                        <span class="hidden-mobile">asio实现http服务器</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

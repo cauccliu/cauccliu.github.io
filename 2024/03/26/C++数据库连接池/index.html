@@ -1,0 +1,707 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="C++数据库连接池连接池对于数据库操作都是在访问数据库的时候创建连接，访问完毕断开连接。但是如果在高并发情况下，有些需要频繁处理的操作就会消耗很多的资源和时间，比如：  建立通信连接的TCP三次握手 数据库服务器的连接认证 数据库服务器关闭连接时的资源回收 断开通信连接的TCP四次挥手  数据库连接池负责分配、管理和释放数据库连接，它允许应用程序重复使用一个现有的数据库连接，而不是再重新建立一个。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++数据库连接池">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/C++%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="C++数据库连接池连接池对于数据库操作都是在访问数据库的时候创建连接，访问完毕断开连接。但是如果在高并发情况下，有些需要频繁处理的操作就会消耗很多的资源和时间，比如：  建立通信连接的TCP三次握手 数据库服务器的连接认证 数据库服务器关闭连接时的资源回收 断开通信连接的TCP四次挥手  数据库连接池负责分配、管理和释放数据库连接，它允许应用程序重复使用一个现有的数据库连接，而不是再重新建立一个。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-03-26T13:07:49.326Z">
+<meta property="article:modified_time" content="2024-03-26T13:08:25.643Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>C++数据库连接池 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++数据库连接池"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 21:07" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++数据库连接池</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="C-数据库连接池"><a href="#C-数据库连接池" class="headerlink" title="C++数据库连接池"></a>C++数据库连接池</h1><h2 id="连接池"><a href="#连接池" class="headerlink" title="连接池"></a>连接池</h2><p>对于数据库操作都是在访问数据库的时候创建连接，访问完毕断开连接。但是如果在高并发情况下，有些需要频繁处理的操作就会消耗很多的资源和时间，比如：</p>
+<ul>
+<li>建立通信连接的TCP三次握手</li>
+<li>数据库服务器的连接认证</li>
+<li>数据库服务器关闭连接时的资源回收</li>
+<li>断开通信连接的TCP四次挥手</li>
+</ul>
+<p><code>数据库连接池负责分配、管理和释放数据库连接，它允许应用程序重复使用一个现有的数据库连接，而不是再重新建立一个。在并发程度比较高的时候，连接池技术尽可能多地重用了消耗内存地资源，大大节省了内存，提高了服务器地服务效率，能够支持更多的客户服务。通过使用连接池，将大大提高程序运行效率。</code></p>
+<hr>
+<h2 id="C-API"><a href="#C-API" class="headerlink" title="C API"></a>C API</h2><ul>
+<li>MYSQL *mysql_real_connect：连接mysql服务器。</li>
+<li>int mysql_query(MYSQL *mysql, const char *query); 执行sql语句</li>
+<li>MYSQL_RES *mysql_store_result(MYSQL *mysql); 获取结果集</li>
+<li>unsigned int mysql_num_fields(MYSQL_RES *result) 得到结果集的列数</li>
+<li>MYSQL_FIELD *mysql_fetch_fields(MYSQL_RES *result); 获取表头 -&gt; 列名(字段名)</li>
+<li>unsigned long *mysql_fetch_lengths(MYSQL_RES *result); 得到结果集中字段的长度</li>
+<li>MYSQL_ROW mysql_fetch_row(MYSQL_RES *result); 遍历结果集</li>
+<li>void mysql_free_result(MYSQL_RES *result); 释放结果集</li>
+<li>void mysql_close(MYSQL *mysql); 关闭mysql实例</li>
+<li>const char *mysql_character_set_name(MYSQL *mysql)  为当前连接返回默认的字符集。</li>
+<li>int mysql_set_character_set(MYSQL *mysql, char *csname); 设置api使用的字符集</li>
+<li>my_bool mysql_autocommit(MYSQL *mysql, my_bool mode)  mysql中默认会进行事务的提交。</li>
+<li>my_bool mysql_commit(MYSQL *mysql); 事务提交</li>
+<li>my_bool mysql_rollback(MYSQL *mysql)  数据回滚</li>
+<li>const char *mysql_error(MYSQL *mysql); 打印错误信息</li>
+<li>unsigned int mysql_errno(MYSQL *mysql); 返回错误编号</li>
+<li>Windows：libmysql.dll 库。</li>
+<li>Linux：libmysqlclient.so。</li>
+</ul>
+<h2 id="数据库步骤"><a href="#数据库步骤" class="headerlink" title="数据库步骤"></a>数据库步骤</h2><p><code>数据库连接顺序</code></p>
+<ol>
+<li>初始化连接环境</li>
+<li>连接mysql的服务器，需要提供如下连接数据: IP，端口，用户名，密码，数据库名字</li>
+<li>数据库的增删查改操作</li>
+<li>事务处理：提交事务；或者回滚。</li>
+<li>数据库的读操作</li>
+<li>遍历结果集。</li>
+<li>释放资源。</li>
+</ol>
+<p><code>数据库连接池</code></p>
+<ul>
+<li>单例模式，只需要一个类对象。</li>
+<li>所有的数据库连接应该维护到一个安全的队列中，直接使用STL的queue。</li>
+<li>在需要的时候可以从连接池中得到一个或多个可用的数据库连接，对于连接的动态创建和销毁，用单独的线程去处理。</li>
+<li>如果队列中没有多余的可用连接，需要动态的创建新连接。</li>
+<li>如果队列中空闲的连接太多，需要动态的销毁一部分。</li>
+<li>数据库操作完毕，需要将连接归还到连接池中。生产者和消费者模型：锁，条件变量。</li>
+</ul>
+<p>数据库连接服务操作模块：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;mysql.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;chrono&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> chrono;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">MysqlConn</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 初始化数据库连接</span><br>    <span class="hljs-built_in">MysqlConn</span>();<br>    <span class="hljs-comment">// 释放数据库连接</span><br>    ~<span class="hljs-built_in">MysqlConn</span>();<br>    <span class="hljs-comment">// 连接数据库</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">connect</span><span class="hljs-params">(string user, string passwd, string dbName, string ip, <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> port = <span class="hljs-number">3306</span>)</span></span>;<br>    <span class="hljs-comment">// 更新数据库: insert, update, delete</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">update</span><span class="hljs-params">(string sql)</span></span>;<br>    <span class="hljs-comment">// 查询数据库</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">query</span><span class="hljs-params">(string sql)</span></span>;<br>    <span class="hljs-comment">// 遍历查询得到的结果集</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">next</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 得到结果集中的字段值</span><br>    <span class="hljs-function">string <span class="hljs-title">value</span><span class="hljs-params">(<span class="hljs-type">int</span> index)</span></span>;<br>    <span class="hljs-comment">// 事务操作</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">transaction</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 提交事务</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">commit</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 事务回滚 </span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">rollback</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 刷新起始的空闲时间点</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">refreshAliveTime</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-comment">// 计算连接存活的总时长</span><br>    <span class="hljs-function"><span class="hljs-type">long</span> <span class="hljs-type">long</span> <span class="hljs-title">getAliveTime</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">freeResult</span><span class="hljs-params">()</span></span>;<br>    MYSQL* m_conn = <span class="hljs-literal">nullptr</span>;<br>    MYSQL_RES* m_result = <span class="hljs-literal">nullptr</span>;<br>    MYSQL_ROW m_row = <span class="hljs-literal">nullptr</span>;<br>    steady_clock::time_point m_alivetime;<span class="hljs-comment">// 绝对时钟判断连接存活时长</span><br>&#125;;<br><br><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;MysqlConn.h&quot;</span></span><br><br>MysqlConn::<span class="hljs-built_in">MysqlConn</span>()<br>&#123;<br>    m_conn = <span class="hljs-built_in">mysql_init</span>(<span class="hljs-literal">nullptr</span>); <span class="hljs-comment">//初始化对象</span><br>    <span class="hljs-built_in">mysql_set_character_set</span>(m_conn, <span class="hljs-string">&quot;utf8&quot;</span>); <span class="hljs-comment">// 设置utf-8编码格式</span><br>&#125;<br><br>MysqlConn::~<span class="hljs-built_in">MysqlConn</span>()<br>&#123;<br>    <span class="hljs-keyword">if</span> (m_conn != <span class="hljs-literal">nullptr</span>)<br>    &#123;<br>        <span class="hljs-built_in">mysql_close</span>(m_conn); <span class="hljs-comment">//关闭连接</span><br>    &#125;<br>    <span class="hljs-built_in">freeResult</span>(); <span class="hljs-comment">// 释放一个结果集合使用的内存。</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::connect</span><span class="hljs-params">(string user, string passwd, string dbName, string ip, <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> port)</span></span><br><span class="hljs-function"></span>&#123;<br>    MYSQL* ptr = <span class="hljs-built_in">mysql_real_connect</span>(m_conn, ip.<span class="hljs-built_in">c_str</span>(), user.<span class="hljs-built_in">c_str</span>(), passwd.<span class="hljs-built_in">c_str</span>(), dbName.<span class="hljs-built_in">c_str</span>(), port, <span class="hljs-literal">nullptr</span>, <span class="hljs-number">0</span>); <span class="hljs-comment">//连接mysql服务器</span><br>    <span class="hljs-keyword">return</span> ptr != <span class="hljs-literal">nullptr</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::update</span><span class="hljs-params">(string sql)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">mysql_query</span>(m_conn, sql.<span class="hljs-built_in">c_str</span>())) <span class="hljs-comment">//更新数据库</span><br>    &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::query</span><span class="hljs-params">(string sql)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">freeResult</span>();<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">mysql_query</span>(m_conn, sql.<span class="hljs-built_in">c_str</span>()))<br>    &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>    m_result = <span class="hljs-built_in">mysql_store_result</span>(m_conn); <span class="hljs-comment">// 保存结果集</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::next</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (m_result != <span class="hljs-literal">nullptr</span>)<br>    &#123;<br>        m_row = <span class="hljs-built_in">mysql_fetch_row</span>(m_result);<br>        <span class="hljs-keyword">if</span> (m_row != <span class="hljs-literal">nullptr</span>)<br>        &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br><span class="hljs-function">string <span class="hljs-title">MysqlConn::value</span><span class="hljs-params">(<span class="hljs-type">int</span> index)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">int</span> rowCount = <span class="hljs-built_in">mysql_num_fields</span>(m_result);<br>    <span class="hljs-keyword">if</span> (index &gt;= rowCount || index &lt; <span class="hljs-number">0</span>)<br>    &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">string</span>();<br>    &#125;<br>    <span class="hljs-type">char</span>* val = m_row[index];<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> length = <span class="hljs-built_in">mysql_fetch_lengths</span>(m_result)[index];<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">string</span>(val, length);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::transaction</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">mysql_autocommit</span>(m_conn, <span class="hljs-literal">false</span>); <span class="hljs-comment">//手动提交，不自动提交事务。</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::commit</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">mysql_commit</span>(m_conn); <span class="hljs-comment">//提交事务</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">MysqlConn::rollback</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">mysql_rollback</span>(m_conn); <span class="hljs-comment">// 事务回滚</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MysqlConn::refreshAliveTime</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    m_alivetime = steady_clock::<span class="hljs-built_in">now</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">long</span> <span class="hljs-type">long</span> <span class="hljs-title">MysqlConn::getAliveTime</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    nanoseconds res = steady_clock::<span class="hljs-built_in">now</span>() - m_alivetime;<span class="hljs-comment">// 纳秒 较高精度</span><br>    milliseconds millsec = <span class="hljs-built_in">duration_cast</span>&lt;milliseconds&gt;(res);<span class="hljs-comment">// 毫秒 精度相对较低</span><br>    <span class="hljs-keyword">return</span> millsec.<span class="hljs-built_in">count</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">MysqlConn::freeResult</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (m_result)<br>    &#123;<br>        <span class="hljs-built_in">mysql_free_result</span>(m_result);<br>        m_result = <span class="hljs-literal">nullptr</span>;<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+<p>连接池</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> once</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;queue&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;mutex&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;condition_variable&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;MysqlConn.h&quot;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ConnectionPool</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">static</span> ConnectionPool* <span class="hljs-title">getConnectPool</span><span class="hljs-params">()</span></span>; <span class="hljs-comment">// 创建单例模式</span><br>    <span class="hljs-built_in">ConnectionPool</span>(<span class="hljs-type">const</span> ConnectionPool&amp; obj) = <span class="hljs-keyword">delete</span>; <span class="hljs-comment">//禁止使用拷贝构造</span><br>    ConnectionPool&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> ConnectionPool&amp; obj) = <span class="hljs-keyword">delete</span>; <span class="hljs-comment">// 禁止使用拷贝赋值运算符</span><br>    <span class="hljs-function">shared_ptr&lt;MysqlConn&gt; <span class="hljs-title">getConnection</span><span class="hljs-params">()</span></span>;<br>    ~<span class="hljs-built_in">ConnectionPool</span>();<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">ConnectionPool</span>(); <span class="hljs-comment">//构造函数设置为私有的，单例模式</span><br>    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">parseJsonFile</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">produceConnection</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">recycleConnection</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">addConnection</span><span class="hljs-params">()</span></span>;<br><br>    string m_ip;<span class="hljs-comment">// 数据库服务器ip地址</span><br>    string m_user;<span class="hljs-comment">// 数据库服务器用户名</span><br>    string m_passwd;<span class="hljs-comment">// 数据库服务器密码</span><br>    string m_dbName;<span class="hljs-comment">// 数据库服务器的数据库名</span><br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> m_port;<span class="hljs-comment">// 数据库服务器绑定的端口</span><br>    <span class="hljs-type">int</span> m_minSize;<span class="hljs-comment">// 连接池维护的最小连接数</span><br>    <span class="hljs-type">int</span> m_maxSize;<span class="hljs-comment">// 连接池维护的最大连接数</span><br>    <span class="hljs-type">int</span> m_timeout;<span class="hljs-comment">// 连接池获取连接的超时时长</span><br>    <span class="hljs-type">int</span> m_maxIdleTime;<span class="hljs-comment">// 连接池中连接的最大空闲时长</span><br><br><br>    queue&lt;MysqlConn*&gt; m_connectionQ; <span class="hljs-comment">// 连接队列</span><br>    mutex m_mutexQ; <br>    condition_variable m_cond;<br>&#125;;<br><br><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;ConnectionPool.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;json/json.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> Json;<br><span class="hljs-function">ConnectionPool* <span class="hljs-title">ConnectionPool::getConnectPool</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-type">static</span> ConnectionPool pool;<br>    <span class="hljs-keyword">return</span> &amp;pool;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">ConnectionPool::parseJsonFile</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-function">ifstream <span class="hljs-title">ifs</span><span class="hljs-params">(<span class="hljs-string">&quot;dbconf.json&quot;</span>)</span></span>;<br>    Reader rd;<br>    Value root;<br>    rd.<span class="hljs-built_in">parse</span>(ifs, root);<br>    <span class="hljs-keyword">if</span> (root.<span class="hljs-built_in">isObject</span>())<br>    &#123;<br>        m_ip = root[<span class="hljs-string">&quot;ip&quot;</span>].<span class="hljs-built_in">asString</span>();<br>        m_port = root[<span class="hljs-string">&quot;port&quot;</span>].<span class="hljs-built_in">asInt</span>();<br>        m_user = root[<span class="hljs-string">&quot;userName&quot;</span>].<span class="hljs-built_in">asString</span>();<br>        m_passwd = root[<span class="hljs-string">&quot;password&quot;</span>].<span class="hljs-built_in">asString</span>();<br>        m_dbName = root[<span class="hljs-string">&quot;dbName&quot;</span>].<span class="hljs-built_in">asString</span>();<br>        m_minSize = root[<span class="hljs-string">&quot;minSize&quot;</span>].<span class="hljs-built_in">asInt</span>();<br>        m_maxSize = root[<span class="hljs-string">&quot;maxSize&quot;</span>].<span class="hljs-built_in">asInt</span>();<br>        m_maxIdleTime = root[<span class="hljs-string">&quot;maxIdleTime&quot;</span>].<span class="hljs-built_in">asInt</span>();<br>        m_timeout = root[<span class="hljs-string">&quot;timeout&quot;</span>].<span class="hljs-built_in">asInt</span>();<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br><span class="hljs-comment">// 生产连接线程函数</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ConnectionPool::produceConnection</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        <span class="hljs-function">unique_lock&lt;mutex&gt; <span class="hljs-title">locker</span><span class="hljs-params">(m_mutexQ)</span></span>; <span class="hljs-comment">// 锁</span><br>        <span class="hljs-keyword">while</span> (m_connectionQ.<span class="hljs-built_in">size</span>() &gt;= m_minSize)<br>        &#123;<br>            m_cond.<span class="hljs-built_in">wait</span>(locker); <span class="hljs-comment">// 条件变量</span><br>        &#125;<br>        <span class="hljs-built_in">addConnection</span>(); <span class="hljs-comment">// 执行连接</span><br>        m_cond.<span class="hljs-built_in">notify_all</span>(); <span class="hljs-comment">// 通知消费者线程消费</span><br>    &#125;<br>&#125;<br><br><br><span class="hljs-comment">// 销毁连接</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ConnectionPool::recycleConnection</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        this_thread::<span class="hljs-built_in">sleep_for</span>(chrono::<span class="hljs-built_in">milliseconds</span>(<span class="hljs-number">500</span>));<br>        <span class="hljs-function">lock_guard&lt;mutex&gt; <span class="hljs-title">locker</span><span class="hljs-params">(m_mutexQ)</span></span>;<br>        <span class="hljs-keyword">while</span> (m_connectionQ.<span class="hljs-built_in">size</span>() &gt; m_minSize)<br>        &#123;<br>            MysqlConn* conn = m_connectionQ.<span class="hljs-built_in">front</span>();<br>            <span class="hljs-keyword">if</span> (conn-&gt;<span class="hljs-built_in">getAliveTime</span>() &gt;= m_maxIdleTime) <span class="hljs-comment">// 判断连接存活时长，如果满足条件就行删除</span><br>            &#123;<br>                m_connectionQ.<span class="hljs-built_in">pop</span>();<br>                <span class="hljs-keyword">delete</span> conn;<br>            &#125;<br>            <span class="hljs-keyword">else</span><br>            &#123;<br>                <span class="hljs-keyword">break</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ConnectionPool::addConnection</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    MysqlConn* conn = <span class="hljs-keyword">new</span> MysqlConn;<br>    conn-&gt;<span class="hljs-built_in">connect</span>(m_user, m_passwd, m_dbName, m_ip, m_port);<br>    conn-&gt;<span class="hljs-built_in">refreshAliveTime</span>();<br>    m_connectionQ.<span class="hljs-built_in">push</span>(conn);<br>&#125;<br><br><span class="hljs-comment">// 取出可用连接</span><br><span class="hljs-function">shared_ptr&lt;MysqlConn&gt; <span class="hljs-title">ConnectionPool::getConnection</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-function">unique_lock&lt;mutex&gt; <span class="hljs-title">locker</span><span class="hljs-params">(m_mutexQ)</span></span>;<br>    <span class="hljs-keyword">while</span> (m_connectionQ.<span class="hljs-built_in">empty</span>()) <span class="hljs-comment">// 判断连接是否为空</span><br>    &#123;<br>        <span class="hljs-keyword">if</span> (cv_status::timeout == m_cond.<span class="hljs-built_in">wait_for</span>(locker, chrono::<span class="hljs-built_in">milliseconds</span>(m_timeout)))<span class="hljs-comment">// 阻塞一段时间</span><br>        &#123;<br>            <span class="hljs-keyword">if</span> (m_connectionQ.<span class="hljs-built_in">empty</span>())<br>            &#123;<br>                <span class="hljs-comment">//return nullptr;</span><br>                <span class="hljs-keyword">continue</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// lambda表达式定义shared_ptr的销毁函数。</span><br>    <span class="hljs-function">shared_ptr&lt;MysqlConn&gt; <span class="hljs-title">connptr</span><span class="hljs-params">(m_connectionQ.front(), [<span class="hljs-keyword">this</span>](MysqlConn* conn) &#123;</span></span><br><span class="hljs-params"><span class="hljs-function">        lock_guard&lt;mutex&gt; locker(m_mutexQ);</span></span><br><span class="hljs-params"><span class="hljs-function">        conn-&gt;refreshAliveTime();</span></span><br><span class="hljs-params"><span class="hljs-function">        m_connectionQ.push(conn);</span></span><br><span class="hljs-params"><span class="hljs-function">        &#125;)</span></span>;<br>    m_connectionQ.<span class="hljs-built_in">pop</span>();<br>    m_cond.<span class="hljs-built_in">notify_all</span>();<span class="hljs-comment">// 唤醒生产者线程，附带着也会唤醒消费者线程</span><br>    <span class="hljs-keyword">return</span> connptr;<br>&#125;<br><br>ConnectionPool::~<span class="hljs-built_in">ConnectionPool</span>()<br>&#123;<br>    <span class="hljs-keyword">while</span> (!m_connectionQ.<span class="hljs-built_in">empty</span>())<br>    &#123;<br>        MysqlConn* conn = m_connectionQ.<span class="hljs-built_in">front</span>();<br>        m_connectionQ.<span class="hljs-built_in">pop</span>();<br>        <span class="hljs-keyword">delete</span> conn;<br>    &#125;<br>&#125;<br><br>ConnectionPool::<span class="hljs-built_in">ConnectionPool</span>()<br>&#123;<br>    <span class="hljs-comment">// 加载配置文件</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">parseJsonFile</span>())<br>    &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; m_minSize; ++i) <span class="hljs-comment">// 默认情况保证有minsize个数的连接就行了。</span><br>    &#123;<br>        <span class="hljs-built_in">addConnection</span>();<br>    &#125;<br>    <span class="hljs-function">thread <span class="hljs-title">producer</span><span class="hljs-params">(&amp;ConnectionPool::produceConnection, <span class="hljs-keyword">this</span>)</span></span>;<span class="hljs-comment">// 生产连接</span><br>    <span class="hljs-function">thread <span class="hljs-title">recycler</span><span class="hljs-params">(&amp;ConnectionPool::recycleConnection, <span class="hljs-keyword">this</span>)</span></span>;<span class="hljs-comment">// 看有没有需要销毁的连接</span><br>    producer.<span class="hljs-built_in">detach</span>();<br>    recycler.<span class="hljs-built_in">detach</span>();<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+
+
+<p>参考列表：<br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Fr4y1s7w4">https://www.bilibili.com/video/BV1Fr4y1s7w4</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/CrankZ/article/details/82874158">https://blog.csdn.net/CrankZ/article/details/82874158</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80/" class="category-chain-item">语言基础</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++数据库连接池</div>
+      <div>https://cauccliu.github.io/2024/03/26/C++数据库连接池/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20LRU/" title="C++ LRU">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++ LRU</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%E5%AE%9E%E7%8E%B0string%E7%B1%BB/" title="C++实现string类">
+                        <span class="hidden-mobile">C++实现string类</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

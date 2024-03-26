@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="C++ asio学习四大小端字节序 网络字节序为大端序，计算机内部存储有可能是大端，有可能是小端。 网络传输时，需要将本地数据转换为大端序，实现字节序的转换。  判断是大端还是小端： 1234567891011&#x2F;&#x2F; 判断当前系统的字节序是大端序还是小端序bool is_big_endian() &amp;#123;    int num &#x3D; 1;    if (*(char*)&amp;num &#x3D;&#x3D; 1)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ asio学习四">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E5%9B%9B/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="C++ asio学习四大小端字节序 网络字节序为大端序，计算机内部存储有可能是大端，有可能是小端。 网络传输时，需要将本地数据转换为大端序，实现字节序的转换。  判断是大端还是小端： 1234567891011&#x2F;&#x2F; 判断当前系统的字节序是大端序还是小端序bool is_big_endian() &amp;#123;    int num &#x3D; 1;    if (*(char*)&amp;num &#x3D;&#x3D; 1)">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/1aab044eae7045219f3c290c2e960c10.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/3744a5b013fd404480bf2de89d328bc0.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/df99360b61ee45fbbbea08107bc07586.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/324ae7b9b3ee4a14871bd37093fb3f28.png">
+<meta property="article:published_time" content="2024-03-26T13:17:16.759Z">
+<meta property="article:modified_time" content="2024-03-26T13:17:42.412Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png">
+  
+  
+  
+  <title>C++ asio学习四 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++ asio学习四"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 21:17" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++ asio学习四</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="C-asio学习四"><a href="#C-asio学习四" class="headerlink" title="C++ asio学习四"></a>C++ asio学习四</h1><h2 id="大小端字节序"><a href="#大小端字节序" class="headerlink" title="大小端字节序"></a>大小端字节序</h2><ul>
+<li><code>网络字节序为大端序</code>，计算机内部存储有可能是大端，有可能是小端。<br><img src="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>网络传输时，需要将本地数据转换为大端序，实现字节序的转换。</li>
+</ul>
+<p><code>判断是大端还是小端：</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 判断当前系统的字节序是大端序还是小端序</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">is_big_endian</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> num = <span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">if</span> (*(<span class="hljs-type">char</span>*)&amp;num == <span class="hljs-number">1</span>) &#123;<br>        <span class="hljs-comment">// 当前系统为小端序</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-comment">// 当前系统为大端序</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>在 boost::asio 库中，可以使用<code>boost::asio::detail::socket_ops::host_to_network_long()</code>和 <code>boost::asio::detail::socket_ops::host_to_network_short()</code> 函数将主机字节序转换为网络字节序。</p>
+</li>
+<li><p>network_to_host_short从网络字节序转成本地字节序。</p>
+</li>
+<li><p>在服务器的发送数据时会构造消息节点，构造消息节点时，将发送长度由本地字节序转化为网络字节序.</p>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">MsgNode</span>(<span class="hljs-type">char</span> * msg, <span class="hljs-type">short</span> max_len):_total_len(max_len + HEAD_LENGTH),_cur_len(<span class="hljs-number">0</span>)&#123;<br>        _data = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[_total_len+<span class="hljs-number">1</span>]();<br>        <span class="hljs-comment">//转为网络字节序</span><br>        <span class="hljs-type">int</span> max_len_host = boost::asio::detail::socket_ops::<span class="hljs-built_in">host_to_network_short</span>(max_len);<br>        <span class="hljs-built_in">memcpy</span>(_data, &amp;max_len_host, HEAD_LENGTH);<br>        <span class="hljs-built_in">memcpy</span>(_data+ HEAD_LENGTH, msg, max_len);<br>        _data[_total_len] = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<h2 id="消息队列控制"><a href="#消息队列控制" class="headerlink" title="消息队列控制"></a>消息队列控制</h2><ul>
+<li>发送的数据放到消息队列中，异步发送数据时，要用队列来保证发送的时序性，有的时候发送的频率过高会导致队列增大，所以要对队列的大小做限制，当队列大于指定数量的长度时，就丢弃要发送的数据包，以保证消息的快速收发。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">define</span> MAX_SENDQUE 1024</span><br><span class="hljs-comment">// 实现发送接口</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::Send</span><span class="hljs-params">(<span class="hljs-type">char</span>* msg, <span class="hljs-type">int</span> max_length)</span> </span>&#123;<br>	<span class="hljs-type">bool</span> pending = <span class="hljs-literal">false</span>; <span class="hljs-comment">// pending为true表示上一次数据没有发完。</span><br>	<span class="hljs-type">int</span> send_que_size = _send_que.<span class="hljs-built_in">size</span>();<br>    <span class="hljs-keyword">if</span> (send_que_size &gt; MAX_SENDQUE) &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;session: &quot;</span> &lt;&lt; _uuid &lt;&lt; <span class="hljs-string">&quot; send que fulled, size is &quot;</span> &lt;&lt; MAX_SENDQUE &lt;&lt; endl;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>	<span class="hljs-comment">// 队列里有数据，就不发送了，让队列里面的回调函数发送就行了。</span><br>	_send_que.<span class="hljs-built_in">push</span>(<span class="hljs-built_in">make_shared</span>&lt;MsgNode&gt;(msg, max_length));<br>    <span class="hljs-keyword">if</span> (send_que_size&gt;<span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>	boost::asio::<span class="hljs-built_in">async_write</span>(_socket, boost::asio::<span class="hljs-built_in">buffer</span>(msg, max_length),<br>		std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleWrite,<span class="hljs-keyword">this</span>,std::placeholders::_1,<span class="hljs-built_in">shared_from_this</span>()));<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="protobuf"><a href="#protobuf" class="headerlink" title="protobuf"></a>protobuf</h2><ol>
+<li>protobuf是谷歌设计一种轻便高效的序列化数据结构的协议，独立于语言和平台。<strong>是一种二进制的格式，比使用 xml 、json进行数据交换快许多</strong>。</li>
+<li><code>http信息交互中有的信息类是抽象数据构成的，而tcp是面向字节流的，需要将类结构序列化为字符串来进行传输。</code></li>
+<li>下载protobuf的源码之后，用cmake构建C++代码，生成适用于各种构建系统的构建文件（如makefile，visual studio解决方案等）</li>
+<li>使用 protobuf 能够多（数据结构支持复杂结构、语言支持程度覆盖主流编程语言）、快（编解码效率）、好（数据保存方式为二进制，保存更节省空间、读取转换时间）、省（数据保存大小）。</li>
+</ol>
+<h3 id="windows下编译protobuf"><a href="#windows下编译protobuf" class="headerlink" title="windows下编译protobuf"></a>windows下编译protobuf</h3><ol>
+<li>下载Cmake桌面程序，<strong>点击source code选择protobuf源码路径下的cmake目录</strong>。</li>
+<li>build binaries目录选择<strong>自己创建的visualstudio目录</strong>。</li>
+<li>点击<strong>config，再点击generate</strong>就可以生成了。</li>
+<li>就可以看到<strong>visualstudio目录内生成了.sln文件</strong>。</li>
+<li>点击.sln文件打开项目<br><img src="https://img-blog.csdnimg.cn/direct/1aab044eae7045219f3c290c2e960c10.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>单独选择libprotobuf编译。</li>
+<li>编译时可以选择debug和release，建议每一个都编译一遍，这样就有debug和release两个版本的库了。</li>
+<li>debug版本的库，编译之后，会在visualstudio目录下的Debug文件夹里。</li>
+<li>生成了<strong>protobuf相关的lib库和dll库</strong>，一个是静态类型的，一个是动态类型的。</li>
+<li>在该文件夹内创建一个<strong>bin文件夹</strong>(用来存储刚才protobuf生成的库)和<strong>include文件夹</strong>(用来存储protobuf的头文件)。有了库，需要给用户头文件，让用户去使用。</li>
+<li>将<strong>libprotobufd.lib和libprotocd.lib， 以及protoc.exe拷贝到bin目录</strong>下，将<strong>protobuf文件夹下src文件夹里的google文件夹及其内容拷贝到protoc的include文件夹</strong>。</li>
+<li>添加环境变量，将protoc命令配置到环境变量，在<strong>系统环境变量里添加一个环境变量PROTOBUF_HOME,设置它的值为D:\cppsoft\protoc\bin</strong>。这个环境变量的值要根据自己创建的bin目录去设置。</li>
+<li>可以直接使用protoc.exe了。</li>
+<li>在visual studio中使用protobuf，需要进行一下配置，和boost的配置是一样的</li>
+<li>配置选择Debug，平台选择X64，选择VC++目录</li>
+<li>在包含目录中添加 D:\cppsoft\protoc\include</li>
+<li>在库目录中添加 D:\cppsoft\protoc\bin</li>
+<li>在链接器里的输入选项中添加protobuf用到的lib库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">libprotobufd.lib<br>libprotocd.lib<br></code></pre></td></tr></table></figure>
+
+<h3 id="Linux下编译protobuf"><a href="#Linux下编译protobuf" class="headerlink" title="Linux下编译protobuf"></a>Linux下编译protobuf</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># clone code</span><br>https://github.com/protocolbuffers/protobuf/releases<br><br><span class="hljs-comment"># 解压缩</span><br>tar zxvf protobuf-cpp-3.21.12.tar.gz<br><br><span class="hljs-comment"># 进入到解压目录</span><br><span class="hljs-built_in">cd</span> protobuf-3.21.12/<br><br><span class="hljs-comment"># 构建并安装</span><br>./configure         <span class="hljs-comment"># 检查安装环境, 生成 makefile</span><br>make                <span class="hljs-comment"># 编译</span><br>sudo make install   <span class="hljs-comment"># 安装</span><br><br><span class="hljs-comment"># 测试</span><br>protoc --version<br><br><span class="hljs-comment"># 动态库位于/usr/local/lib目录，接下来需要需要将这目录添加到/etc/ld.so.conf这个配置文件</span><br>sudo vim /etc/ld.so.conf<br><span class="hljs-comment"># 打开文件后，把目录添加到第二行</span><br>/usr/local/lib<br><br><span class="hljs-comment"># 重新load配置文件</span><br>sudo ldconfig<br><br><span class="hljs-comment"># 测试</span><br>protoc --version<br>libprotoc 3.21.12<br></code></pre></td></tr></table></figure>
+
+<h3 id="使用protobuf"><a href="#使用protobuf" class="headerlink" title="使用protobuf"></a>使用protobuf</h3><ol>
+<li>protobuf可以序列化单一数据类型和复合数据类型。</li>
+<li>创建一个新的文件, 文件名随意指定, 文件后缀为 .proto</li>
+<li>根据protobuf的语法, 编辑.proto文件</li>
+<li>使用 protoc 命令将 .proto 文件转化为相应的 C++ 文件</li>
+<li>源文件: xxx.pb.cc –&gt; xxx对应的名字和 .proto文件名相同。</li>
+<li>头文件: xxx.pb.h –&gt; xxx对应的名字和 .proto文件名相同。</li>
+<li>需要将生成的c++文件添加到项目中, 通过文件中提供的类 API 实现数据的序列化&#x2F;反序列化</li>
+</ol>
+<p><code>生成pb文件</code><br>8. <strong>使用protobuf的序列化功能，需要生成pb文件，pb文件包含了我们要序列化的类信息</strong>。我们先创建一个msg.proto，该文件用来定义我们要发送的类信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs bash">syntax = <span class="hljs-string">&quot;proto3&quot;</span>; <span class="hljs-comment"># 指定Protobuf的版本号</span><br>message Book<br>&#123;<br>   string name = 1; <span class="hljs-comment"># 数字标识符，用于标识该字段在二进制流中的位置。</span><br>   int32 pages = 2;<br>   <span class="hljs-built_in">float</span> price = 3;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>用protoc.exe 基于msg.proto生成我们要用的C++类</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c">protoc --cpp_out=. ./msg.proto<br></code></pre></td></tr></table></figure>
+<p><strong>目录生成了msg.pb.h和msg.pb.cc两个文件，这两个文件就是我们要用到的头文件和cpp文件</strong>。</p>
+<p>将这两个文件添加到项目里，然后在主函数中包含msg.pb.h，做如下测试：<code>将book对象先序列化为字符串，再将字符串反序列化为book2对象。代码中调用的函数都是自动生成的</code> </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;msg.pb.h&quot;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    Book book;<br>    book.<span class="hljs-built_in">set_name</span>(<span class="hljs-string">&quot;CPP programing&quot;</span>); <br>    book.<span class="hljs-built_in">set_pages</span>(<span class="hljs-number">100</span>); <br>    book.<span class="hljs-built_in">set_price</span>(<span class="hljs-number">200</span>); <br>    std::string bookstr;<br>    book.<span class="hljs-built_in">SerializeToString</span>(&amp;bookstr); <span class="hljs-comment">//将book对象先序列化为字符串</span><br>    std::cout &lt;&lt; <span class="hljs-string">&quot;serialize str is &quot;</span> &lt;&lt; bookstr &lt;&lt; std::endl;<br>    Book book2;<br>    book2.<span class="hljs-built_in">ParseFromString</span>(bookstr); <span class="hljs-comment">// 字符串反序列化为book2对象。</span><br>    std::cout &lt;&lt; <span class="hljs-string">&quot;book2 name is &quot;</span> &lt;&lt; book2.<span class="hljs-built_in">name</span>() &lt;&lt; <span class="hljs-string">&quot; price is &quot;</span> <br>        &lt;&lt; book2.<span class="hljs-built_in">price</span>() &lt;&lt; <span class="hljs-string">&quot; pages is &quot;</span> &lt;&lt; book2.<span class="hljs-built_in">pages</span>() &lt;&lt; std::endl;<br>    <span class="hljs-built_in">getchar</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<p><code>网络消息服务中使用protobuf</code></p>
+<ol>
+<li>先为服务器定义一个用来通信的proto</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp">syntax = <span class="hljs-string">&quot;proto3&quot;</span>;<br>message MsgData<br>&#123;<br>   int32  id = <span class="hljs-number">1</span>;<br>   string data = <span class="hljs-number">2</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>用proto生成对应的pb.h和pb.cc文件，将proto,pb.cc,pb.h三个文件复制服务器项目里并且配置。</li>
+<li>修改服务器接收数据和发送数据的逻辑。</li>
+<li><strong>当服务器收到数据后，完成切包处理后，将信息反序列化为具体要使用的结构,打印相关的信息，然后再发送给客户端</strong>。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MsgData msgdata;<br>   std::string receive_data;<br>   msgdata.<span class="hljs-built_in">ParseFromString</span>(std::<span class="hljs-built_in">string</span>(_recv_msg_node-&gt;_data, _recv_msg_node-&gt;_total_len));<br>   std::cout &lt;&lt; <span class="hljs-string">&quot;recevie msg id  is &quot;</span> &lt;&lt; msgdata.<span class="hljs-built_in">id</span>() &lt;&lt; <span class="hljs-string">&quot; msg data is &quot;</span> &lt;&lt; msgdata.<span class="hljs-built_in">data</span>() &lt;&lt; endl;<br>   std::string return_str = <span class="hljs-string">&quot;server has received msg, msg data is &quot;</span> + msgdata.<span class="hljs-built_in">data</span>();<br>   MsgData msgreturn;<br>   msgreturn.<span class="hljs-built_in">set_id</span>(msgdata.<span class="hljs-built_in">id</span>());<br>   msgreturn.<span class="hljs-built_in">set_data</span>(return_str);<br>   msgreturn.<span class="hljs-built_in">SerializeToString</span>(&amp;return_str);<br>   <span class="hljs-built_in">Send</span>(return_str);<br></code></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>客户端在发送的时候也利用<strong>protobuf进行消息的序列化</strong>，然后发给服务器。</li>
+</ol>
+<h2 id="JSONCPP"><a href="#JSONCPP" class="headerlink" title="JSONCPP"></a>JSONCPP</h2><p>JSONCPP源码链接：<a target="_blank" rel="noopener" href="https://github.com/open-source-parsers/jsoncpp">https://github.com/open-source-parsers/jsoncpp</a></p>
+<ol>
+<li>JSOCPP源码下载以后，首先复制一份include文件夹下的json文件夹，头文件留着后续备用。<br><img src="https://img-blog.csdnimg.cn/direct/3744a5b013fd404480bf2de89d328bc0.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>使用Cmake生成项目。在IDE中编译jsoncpp_lib，可以在项目的lib&#x2F;Debug文件夹下找到jsoncpp.lib，在bin&#x2F;Debug&#x2F;文件夹下找到jsoncpp.dll。将头文件和动态链接库文件，放入项目中即可使用。<br><img src="https://img-blog.csdnimg.cn/direct/df99360b61ee45fbbbea08107bc07586.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/direct/324ae7b9b3ee4a14871bd37093fb3f28.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>jsoncpp库中的类被定义到了一个Json命名空间中，使用时最好先声明这个命名空间。</li>
+</ol>
+<p>配置Jsoncpp：</p>
+<ul>
+<li><p>项目属性中，VC++包含目录设置为 D:\JSONCPP\include</p>
+</li>
+<li><p>库目录选择为 VC++库目录设置为 D:\JSONCPP\lib</p>
+</li>
+<li><p>使用jsoncpp库解析json格式的数据，三个类：</p>
+</li>
+<li><p>Value 类：将json支持的数据类型进行了包装，最终得到一个Value类型。</p>
+</li>
+<li><p>FastWriter类：将Value对象中的数据序列化为字符串。</p>
+</li>
+<li><p>Reader类：反序列化，将json字符串解析成Value类型。</p>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;json/json.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;json/value.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;json/reader.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    Json::Value root;<br>    root[<span class="hljs-string">&quot;id&quot;</span>] = <span class="hljs-number">1001</span>;<br>    root[<span class="hljs-string">&quot;data&quot;</span>] = <span class="hljs-string">&quot;hello world&quot;</span>;<br>    std::string request = root.<span class="hljs-built_in">toStyledString</span>(); <span class="hljs-comment">//序列化为字符串</span><br>    std::cout &lt;&lt; <span class="hljs-string">&quot;request is &quot;</span> &lt;&lt; request &lt;&lt; std::endl;<br>    Json::Value root2;<br>    Json::Reader reader;<br>    reader.<span class="hljs-built_in">parse</span>(request, root2); <span class="hljs-comment">// 反序列化为value类型。</span><br>    std::cout &lt;&lt; <span class="hljs-string">&quot;msg id is &quot;</span> &lt;&lt; root2[<span class="hljs-string">&quot;id&quot;</span>] &lt;&lt; <span class="hljs-string">&quot; msg is &quot;</span> &lt;&lt; root2[<span class="hljs-string">&quot;data&quot;</span>] &lt;&lt; std::endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>在网络通信中的JSONCPP</code></p>
+<ul>
+<li>客户端发送数据时，将发送的数据进行序列化</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Json::Value root;<br>   root[<span class="hljs-string">&quot;id&quot;</span>] = <span class="hljs-number">1001</span>;<br>   root[<span class="hljs-string">&quot;data&quot;</span>] = <span class="hljs-string">&quot;hello world&quot;</span>;<br>   std::string request = root.<span class="hljs-built_in">toStyledString</span>(); <span class="hljs-comment">// 序列化为字符串</span><br>   <span class="hljs-type">size_t</span> request_length = request.<span class="hljs-built_in">length</span>();<br>   <span class="hljs-type">char</span> send_data[MAX_LENGTH] = &#123; <span class="hljs-number">0</span> &#125;;<br>   <span class="hljs-comment">//转为网络字节序</span><br>   <span class="hljs-type">int</span> request_host_length = boost::asio::detail::socket_ops::<span class="hljs-built_in">host_to_network_short</span>(request_length);<br>   <span class="hljs-built_in">memcpy</span>(send_data, &amp;request_host_length, <span class="hljs-number">2</span>); <span class="hljs-comment">//先拷贝2字节的数据长度信息</span><br>   <span class="hljs-built_in">memcpy</span>(send_data + <span class="hljs-number">2</span>, request.<span class="hljs-built_in">c_str</span>(), request_length); <span class="hljs-comment">// 再拷贝数据本身</span><br>   boost::asio::<span class="hljs-built_in">write</span>(sock, boost::asio::<span class="hljs-built_in">buffer</span>(send_data, request_length + <span class="hljs-number">2</span>)); <span class="hljs-comment">// 封装到buffer中进行发送</span><br></code></pre></td></tr></table></figure>
+<ul>
+<li>服务器进行反序列化，注意要转换成本地字节序</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp">Json::Reader reader;<br>   Json::Value root;<br>   reader.<span class="hljs-built_in">parse</span>(std::<span class="hljs-built_in">string</span>(_recv_msg_node-&gt;_data, _recv_msg_node-&gt;_total_len), root);<br>   std::cout &lt;&lt; <span class="hljs-string">&quot;recevie msg id  is &quot;</span> &lt;&lt; root[<span class="hljs-string">&quot;id&quot;</span>].<span class="hljs-built_in">asInt</span>() &lt;&lt; <span class="hljs-string">&quot; msg data is &quot;</span><br>   &lt;&lt; root[<span class="hljs-string">&quot;data&quot;</span>].<span class="hljs-built_in">asString</span>() &lt;&lt; endl;<br></code></pre></td></tr></table></figure>
+
+
+<p>参考列表：<br><a target="_blank" rel="noopener" href="https://subingwen.cn/cpp/protobuf/?highlight=proto">https://subingwen.cn/cpp/protobuf/?highlight=proto</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="category-chain-item">网络编程</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/HTTP/" class="print-no-link">#HTTP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++ asio学习四</div>
+      <div>https://cauccliu.github.io/2024/03/26/C++ asio学习四/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E4%BA%94/" title="C++ asio学习五">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++ asio学习五</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E4%B8%89/" title="C++ asio学习三">
+                        <span class="hidden-mobile">C++ asio学习三</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

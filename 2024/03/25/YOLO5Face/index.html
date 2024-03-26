@@ -1,0 +1,783 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="YOLO5Face模型分析研究生时候写的一篇小白文。 论文及源码下载论文地址：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2105.12931论文我们中国人写的，读起来还是挺顺的。源码地址：https:&#x2F;&#x2F;github.com&#x2F;deepcam-cn&#x2F;yolov5-faceWiderFace地址：WIdeFaceYolo5Face是深圳神目科技&amp;LinkSprite Technologies">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YOLO5Face学习">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/25/YOLO5Face/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="YOLO5Face模型分析研究生时候写的一篇小白文。 论文及源码下载论文地址：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2105.12931论文我们中国人写的，读起来还是挺顺的。源码地址：https:&#x2F;&#x2F;github.com&#x2F;deepcam-cn&#x2F;yolov5-faceWiderFace地址：WIdeFaceYolo5Face是深圳神目科技&amp;LinkSprite Technologies">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/b8b81511277c4aa58fed68e63bbc94c1.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/57d0638210c8448ba33aeb65cf80d655.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_14,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/c35a419445504fab9a7d4c0dae956a93.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/674868c81b14443c9e7c92e66facbab1.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/60a5893b63ca4ca6bd178a078776eb43.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/d14f802373644b71b90dfcaa42b099a9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/17b3c2b7558147e4a48979888a2aaddd.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/4be3813c20604699857ef42636fe01d1.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/ec5173be2624498b8136d0542b8145ed.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_12,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/8b71361e2bd648478ee6ab11407daf1e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/74ea621da7084cf3ad2cd2fcfb8c06ef.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/47804b674c89403cb7342f9fe65ed411.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/39fb7deff05247878df29ae61dcff009.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/f6bd725a06ba400dbf17aec7513a337e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_15,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/04fb0e13de074cdf809b06766b5c4e06.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/677a484684664017b6aa176e84b697f3.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/48630098200f4e13914257eb521f236e.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/cea5af9f735a4c22816d8784e8e040b9.jpg?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_15,color_FFFFFF,t_70,g_se,x_16#pic_center">
+<meta property="article:published_time" content="2024-03-25T13:52:41.726Z">
+<meta property="article:modified_time" content="2024-03-25T13:55:26.892Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="CV">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/b8b81511277c4aa58fed68e63bbc94c1.png">
+  
+  
+  
+  <title>YOLO5Face学习 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="YOLO5Face学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-25 21:52" pubdate>
+          March 25, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          28 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">YOLO5Face学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="YOLO5Face模型分析"><a href="#YOLO5Face模型分析" class="headerlink" title="YOLO5Face模型分析"></a>YOLO5Face模型分析</h1><p>研究生时候写的一篇小白文。</p>
+<h2 id="论文及源码下载"><a href="#论文及源码下载" class="headerlink" title="论文及源码下载"></a>论文及源码下载</h2><p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2105.12931">https://arxiv.org/abs/2105.12931</a>论文我们中国人写的，读起来还是挺顺的。<br>源码地址：<a target="_blank" rel="noopener" href="https://github.com/deepcam-cn/yolov5-face">https://github.com/deepcam-cn/yolov5-face</a><br>WiderFace地址：<a target="_blank" rel="noopener" href="http://shuoyang1213.me/WIDERFACE/WiderFace_Results.html">WIdeFace</a><br>Yolo5Face是深圳神目科技&amp;LinkSprite Technologies（美国）在Yolov5模型基础上进行更新得到的人脸检测模型，在WiderFace上取得了SOTA。</p>
+<h2 id="论文创新点"><a href="#论文创新点" class="headerlink" title="论文创新点"></a>论文创新点</h2><p>正如论文名字的后半部分Why Reinventing a Face Detector？论文将人脸检测视为一般的目标检测任务，所以作者以现在比较热门的YOLOv5模型为基础，辅助以人脸特性，得到一个新的人脸检测器。<br>论文创新点：</p>
+<ol>
+<li><p><strong>在YOLOv5网络中添加五个人脸关键点回归，回归的损失函数用的是Wing loss</strong>。（类比MTCNN、RetinaFace）<br> MTCNN中使用L2损失作为5个人脸关键点的回归损失，但是L2对小的误差并不敏感，为了克服这个问题，Wing-Loss出现了。<br> <img src="https://img-blog.csdnimg.cn/b8b81511277c4aa58fed68e63bbc94c1.png" srcset="/img/loading.gif" lazyload alt="wing loss"><br><img src="https://img-blog.csdnimg.cn/57d0638210c8448ba33aeb65cf80d655.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_14,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="wing loss 图像"><br>可以看到Wing-loss是一个分段的复合损失函数，在训练初期误差较大时用L1损失，在训练后期误差相对小，用一个具有偏移量的对数函数。wing-loss的优点我也不能很好的论述清楚，感兴趣的可以去看这篇博客。<a target="_blank" rel="noopener" href="https://blog.csdn.net/john_bh/article/details/106302026">https://blog.csdn.net/john_bh&#x2F;article&#x2F;details&#x2F;106302026</a><br>作者将五个人脸关键点回归损失加入到总的损失函数中去后，作者将这部分损失函数称为LossL并给这部分损失加上权重，加上YOLOv5本身的损失函数LossO，总的损失函数为Loss(s)。<br><img src="https://img-blog.csdnimg.cn/c35a419445504fab9a7d4c0dae956a93.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>作者在配置文件里面写的：<strong>landmark: 0.005</strong> # landmark loss gain，那应该这个权重就是0.005，具体的代码我还没有看到，看到以后如果不对再改。</p>
+</li>
+<li><p><strong>用Stem模块替代网络中原有的Focus模块</strong>，提高了网络的泛化能力，降低了计算复杂度，同时性能也没有下降。<br>Focus模块出来的时候，就有人说Focus模块比较鸡肋。可能是作者想改掉这部分又不想大改v5的整体模型，所以设计出一个相对更好的模块。<br>Stem模块的图示中虽然都是用的CBS，但是看代码可以看出来第2个和第4个CBS是1x1卷积，第1个和第3个CBS是3x3，stride&#x3D;2的卷积。配合yaml文件可以看到stem以后图像大小由604x640变成了160x160。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">StemBlock</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, c1, c2, k=<span class="hljs-number">3</span>, s=<span class="hljs-number">2</span>, p=<span class="hljs-literal">None</span>, g=<span class="hljs-number">1</span>, act=<span class="hljs-literal">True</span></span>):<br>        <span class="hljs-built_in">super</span>(StemBlock, self).__init__()<br>        self.stem_1 = Conv(c1, c2, k, s, p, g, act) <span class="hljs-comment"># 已经下采样一次了</span><br>        self.stem_2a = Conv(c2, c2 // <span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>)<br>        self.stem_2b = Conv(c2 // <span class="hljs-number">2</span>, c2, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>)<br>        self.stem_2p = nn.MaxPool2d(kernel_size=<span class="hljs-number">2</span>,stride=<span class="hljs-number">2</span>,ceil_mode=<span class="hljs-literal">True</span>)<br>        self.stem_3 = Conv(c2 * <span class="hljs-number">2</span>, c2, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>)<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x</span>):<br>        stem_1_out  = self.stem_1(x)<br>        stem_2a_out = self.stem_2a(stem_1_out)<br>        stem_2b_out = self.stem_2b(stem_2a_out)<br>        stem_2p_out = self.stem_2p(stem_1_out)<br>        out = self.stem_3(torch.cat((stem_2b_out,stem_2p_out),<span class="hljs-number">1</span>))<br>        <span class="hljs-keyword">return</span> out<br></code></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/674868c81b14443c9e7c92e66facbab1.png" srcset="/img/loading.gif" lazyload alt="stem模块"></p>
+</li>
+<li><p><strong>对SPP模块进行更新，使用更小的kernel</strong>，使yolov5更适用于人脸检测并提高了检测精度。YOLOv5用的SPPkernel(5,9,13)，YOLO5Face用的kernel(3,5,7)。<br><img src="https://img-blog.csdnimg.cn/60a5893b63ca4ca6bd178a078776eb43.png" srcset="/img/loading.gif" lazyload alt="SPP模块"></p>
+</li>
+<li><p><strong>添加一个stride &#x3D; 64的P6输出块，P6可以提高对大人脸的检测性能</strong>。（之前的人脸检测模型大多关注提高小人脸的检测性能，这里作者关注了大人脸的检测效果，提高大人脸的检测性能来提升模型整体的检测性能）。P6的特征图大小为10x10。</p>
+</li>
+<li><p><strong>发现一些目标检测的数据增广方法并不适合用在人脸检测中，包括上下翻转和Mosaic数据增广</strong>。删除上下翻转可以提高模型性能。对小人脸进行Mosaic数据增广反而会降低模型性能，但是对中尺度和大尺度人脸进行Mosaic可以提高性能。随机裁剪有助于提高性能。<br>这里主要还是COCO数据集和WiderFace数据集尺度有差异，WiderFace数据集小尺度数据相对较多。</p>
+</li>
+<li><p><strong>基于ShuffleNetv2设计了两个轻量级模型</strong>，backbone和CSP网络不同，模型非常小，可以在嵌入式设备和移动设备达到SOTA。</p>
+</li>
+</ol>
+<p>依托YOLOv5可以调整网络宽度和深度的特点，作者可以方便的设计不同深度和宽度的网络模型，还用ShuffleNetv2设计了轻量级模型，也就是说从复杂到简单，从服务器到嵌入式或者移动设备，都有可以选择的模型。 </p>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="https://img-blog.csdnimg.cn/d14f802373644b71b90dfcaa42b099a9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="消融实验"><br>可以看到作者用的各种模块基本上都能提升map，忽略小人脸进行Mosaic数据增广Easy和Medium的map提升，但是hard的map下降了一些，模型整体的map提升。<br><img src="https://img-blog.csdnimg.cn/17b3c2b7558147e4a48979888a2aaddd.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="对比实验"><br>对比实验主要还是和SCRFD进行对比，可以看到SCRFD的模型整体性能也很好，并且参数和计算量相对比YOLOv5l6小一些，但是YOLOv5l6的map稍微更高一些。<br>实验最后的一些图显示YOLO5Face的召回率相比还有一些提升空间，但是评估中没有TTA方法。（我觉得可以看看看图里面比YOLO5Face召回率高的论文，分析一下为什么别的论文里面召回率更高一些，大神分析出来了请告诉我好吗）。<img src="https://img-blog.csdnimg.cn/4be3813c20604699857ef42636fe01d1.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="YOLO5Face召回率比较"></p>
+<h2 id="下载代码跑起来"><a href="#下载代码跑起来" class="headerlink" title="下载代码跑起来"></a>下载代码跑起来</h2><p>下载代码的地址就是上面的github地址，如果没有配环境就慢慢配环境，不过我觉得更好的方法是把yolov5的代码下载下来，主要里面有个requirements.txt，在pycharm里面直接就能自动下载了，太爽了，没有什么就下载什么，很快就能把环境配好，然后打开yolo5face的代码，用v5自动配好的环境，如果有不匹配的再改。</p>
+<h2 id="调整数据集"><a href="#调整数据集" class="headerlink" title="调整数据集"></a>调整数据集</h2><p>现在我用的数据集目录结构：widerface和widerfaceyolo都用到了。<br><img src="https://img-blog.csdnimg.cn/ec5173be2624498b8136d0542b8145ed.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_12,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="目录结构"><br>调整数据集其实需要分两步，我是把两步的数据集都放到项目里面了：</p>
+<ol>
+<li>将官网训练集标签替换成带人脸关键点的标签，并将验证所需要的wider_val.txt放到路径下面，将数据集放在项目下命名为widerface，用于验证模型检测精度。</li>
+<li>将数据集调整成YOLO5face所需要的的目录格式，命名为widerfaceyolo，用于训练。</li>
+</ol>
+<p><strong>这两步生成的数据集我都上传到腾讯微云了</strong>，如果不想看具体怎么操作的，可以直接<a target="_blank" rel="noopener" href="https://share.weiyun.com/YGaR6OYB">点击链接获取已经调整好的数据集</a>，下载下来放到自己的文件夹就行了。</p>
+<ol>
+<li>WiderFace官网下载数据集链接已经放到最上面了。下载的地方是这样的：<br><img src="https://img-blog.csdnimg.cn/8b71361e2bd648478ee6ab11407daf1e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="WiderFace数据集下载">官网的数据集分三部分，Training和Validation是带标签的，test没有标签，可以暂时不下载。</li>
+<li>下载人脸关键点的标签：因为官网的训练集中人脸是不带关键点，yolo5face需要用到人脸关键点，需要下载带人脸关键点的注释。官网上给的下载地址是<a target="_blank" rel="noopener" href="https://drive.google.com/file/d/1tU_IjyOwGQfGNUvZGwWWM4SwxKp2PUQ8/view?usp=sharing">goole drive</a>的地址。更换标签就完成了初步转换，要把这个初步转换的数据集放到项目里面去，然后在网上找到wider_val.txt也放到下面。<strong>因为后面要做检测精度的验证</strong>，目录结构和我上面的图里面的结构保持一致。</li>
+<li>调整目录结构：<br> 运行两个.py文件，就是官网上说的train2yolo.py和val2yolo.py。看名字也能看明白，这两个代码就是把数据集转成YOLO训练用的格式。<br> 先改<strong>train2yolo.py</strong><img src="https://img-blog.csdnimg.cn/74ea621da7084cf3ad2cd2fcfb8c06ef.png" srcset="/img/loading.gif" lazyload alt="train2yolo.py"><br> 看名字应该看的懂的，save_path是转换之后的图片存到哪里，我是直接存到data下面了，注意文件夹一定要事先建好，不然会出错！第二行就是label.txt的位置，要根据label.txt找图片的位置，这就是为什么要调整好图片和labels.txt。<br>再改<strong>val2yolo.py</strong>, root改到widerface层<br><img src="https://img-blog.csdnimg.cn/47804b674c89403cb7342f9fe65ed411.png" srcset="/img/loading.gif" lazyload alt="root"><br>修改img和txt的输出路径，具体将图片和标签放不放在一起，看自己写的代码。<br><img src="https://img-blog.csdnimg.cn/39fb7deff05247878df29ae61dcff009.png" srcset="/img/loading.gif" lazyload alt="val"><br>调整完成的widerfaceyolo目录结构：<br><img src="https://img-blog.csdnimg.cn/f6bd725a06ba400dbf17aec7513a337e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_15,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>和上面的总体结构一起看就能明白。</li>
+<li>修改widerface.yaml文件，改为自己的数据集路径，记得把下载voc的代码注释掉，然后改成类似的格式就可以了。<br><img src="https://img-blog.csdnimg.cn/04fb0e13de074cdf809b06766b5c4e06.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+</ol>
+<h2 id="训练完成之后检验结果"><a href="#训练完成之后检验结果" class="headerlink" title="训练完成之后检验结果"></a>训练完成之后检验结果</h2><p>runs文件夹下面有对应的训练输出结果，可以看到召回率，检测精度，map。</p>
+<ol>
+<li>验证检测准确度<br> 修改test_widerface.py文件，写入自己的训练好的权重路径<br><img src="https://img-blog.csdnimg.cn/677a484684664017b6aa176e84b697f3.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>修改验证集图片路径，指出wider_val.txt的路径，我这里就是用的widerface的路径，不是widerfaceyolo的路径，相应的改成自己的路径即可。<br><img src="https://img-blog.csdnimg.cn/48630098200f4e13914257eb521f236e.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>这些步骤完成以后，运行test_widerface.py文件，运行完成以后，进入到widerface_evaluate文件夹下，点击widerface_txt可以看到生成的txt文件夹，和里面的txt文件，运行evalution.py即可得到检测准确度，跑不起来就先把对应的包先装好。</li>
+<li>未完待续</li>
+</ol>
+<h2 id="一点点代码简析"><a href="#一点点代码简析" class="headerlink" title="一点点代码简析"></a>一点点代码简析</h2><h3 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h3><ul>
+<li>data</li>
+<li>models</li>
+<li>runs</li>
+<li>torch2tensorrt    # 没看懂，也没用过，懂的教教我</li>
+<li>utils</li>
+<li>weights # 下载预训练权重的脚本</li>
+<li>widerface_evaluate # 验证检测精度的文件夹</li>
+<li>detect_face.py # 只能检测一张图片</li>
+<li>hubconf.py   #PyTorch Hub相关代码，没啥大用</li>
+<li>LICENSE  # 版权文件</li>
+<li>README.md # README markdown文件</li>
+<li>result.jpg # 检测人脸的输出结果</li>
+<li>test.py # 不是用的这个</li>
+<li>test_widerface.py # 用的是这个</li>
+<li>train.py # 模型训练脚本</li>
+</ul>
+<h3 id="data"><a href="#data" class="headerlink" title="data"></a>data</h3><ul>
+<li>images，一些检测用得到的图片。</li>
+<li>scripts，下载其他数据集的一些脚本文件，基本没用。</li>
+<li>widerface，初步转换数据集，用来生成widerfaceyolo数据集和验证训练模型的检测精度。</li>
+<li>widerfaceyolo，训练用的数据集。</li>
+<li>argoverse_hd.yaml&#x2F;coco.yaml&#x2F;coco.yaml&#x2F;voc.yaml，下载自动驾驶&#x2F;COCO&#x2F;VOC训练数据集，配置一下类别数，没啥用。</li>
+<li>hyp.finetune.yaml，yolov5根据voc数据集设置的超参</li>
+<li>hyp.finetune.yaml，真正用到的超参文件！</li>
+<li>retinaface2yolo.yaml，没用过，不太懂</li>
+<li>train2yolo.py，生成训练用的train数据集</li>
+<li>val2yolo.py，生成训练用的val数据集</li>
+<li>widerface.yaml，训练用到的配置文件！</li>
+</ul>
+<h3 id="models"><a href="#models" class="headerlink" title="models"></a>models</h3><ul>
+<li>common.py 模型组件的相关代码</li>
+<li>experimental.py 实验性质的代码，作者的一些想法，没有加到模型里去</li>
+<li>export.py 导出网络模型的结构，会很长很长</li>
+<li>yolo.py Detect以及Model构建代码，写出网络模型的整体构建过程</li>
+<li>….yaml 大大小小的模型配置文件，突出一个灵活。</li>
+</ul>
+<h4 id="common-py"><a href="#common-py" class="headerlink" title="common.py"></a>common.py</h4><ul>
+<li>def autopad：为same卷积或same池化自动零填充，具体填充多少就是用这个函数计算的，保证卷积和池化后的特征图大小不变。</li>
+<li>def channel_shuffle：通道打乱，ShuffleV2Block的前置模块。</li>
+<li>def DWConv：深度可分离卷积，没用到。</li>
+<li>class Conv：Conv2d+BN+SiLU，也可以不进行BN操作。</li>
+<li>class StemBlock：替代Focus的模块，注意每个卷积核的大小和输出尺度。</li>
+<li>class Bottleneck：两次卷积+一次残差连接</li>
+<li>class BottleneckCSP：有多少个n就会有多少个Bottleneck，外层用的激活函数是Leaky_ReLU(0.1)。<br>  一个分支做一次CBS(1x1)，再做n次Bottleneck，再进行一次Conv2d(1x1)；<br>  另一个分支做一次Conv2d(1x1)；<br>  两个分支concat+BN+leakyRelu+CBS(1x1)。</li>
+<li>class C3：论文里面的C3的图是错误的，图里面的浅绿色方块是做一次Conv2d，实际上C3没有进行Conv2d，而是全部用的CBS，也可能是我没看到更深层的代码。<br>一个分支做CBS，做n次Bottleneck；<br>另一个分支做CBS；<br>两个分支concat以后做一次CBS。</li>
+<li>class ShuffleV2Block：轻量化网络结构模块ShuffleV2Block，我没有对这个部分深入理解，后续用到再更新。</li>
+<li>class SPP：SPP模块。</li>
+<li>class Focus：Focus模块。</li>
+<li>class Contract：收缩模块：调整张量的大小，将宽高收缩到通道中。</li>
+<li>class Expand：扩张模块，将特征图像素变大，例如：x(1,64,80,80) to x(1,16,160,160)。</li>
+<li>class Concat：自定义concat模块，dimension就是维度值，说明沿着哪一个维度进行拼接。</li>
+<li>class NMS ：非极大值抑制模块。</li>
+<li>class autoShape：自动调整shape值：因为输入图像可能来自不同的地方和格式，例如filename，URI，numpy等，autoShape模块就是将这些数据进行预处理和调整。</li>
+<li>class Detections：看名字是做检测，但是好像没用到这个模块。</li>
+<li>class Classify：二级分类模块，人脸检测没用到。</li>
+</ul>
+<h3 id="utils"><a href="#utils" class="headerlink" title="utils"></a>utils</h3><ul>
+<li>aws&#x2F;goolge_app_engine&#x2F;wandb_logging&#x2F;google_utils.py 谷歌云和自动驾驶相关的东西，没啥用</li>
+<li>activation.py 激活函数代码</li>
+<li>autoanchor.py 自动计算先验框代码</li>
+<li>datasets.py  yolov5用来生成训练用数据的代码，yolo5face没用这个</li>
+<li>face_datasets.py dataset和dataloader定义代码，只能读图片</li>
+<li>general.py 设置一些通用的代码，如日志文件，随机数，获取最后一个权重文件等等</li>
+<li>loss.py 损失函数相关代码</li>
+<li>metrics.py 模型验证度量，计算ap,p,r等</li>
+<li>plotting utils.py 画图工具</li>
+<li>torch_utils pytorch工具，初始化随机数种子，git描述等</li>
+</ul>
+<h2 id="一些问题"><a href="#一些问题" class="headerlink" title="一些问题"></a>一些问题</h2><ol>
+<li>有问题可以先去github官网源码那里看看，想在CSDN找答案实在是太难了。</li>
+<li>官网的yolo5-face.pt预训练权重加入到模型中进行训练是会报错的，用yolov5官方的5.0的权重作为预训练权重就可以了。</li>
+<li>验证检测精度的wider_val.txt文件链接：<a target="_blank" rel="noopener" href="https://share.weiyun.com/fwV3TUDh">wider_val.txt</a></li>
+<li></li>
+</ol>
+<p>最后<br><img src="https://img-blog.csdnimg.cn/cea5af9f735a4c22816d8784e8e040b9.jpg?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAY2xpdTFfMTY=,size_15,color_FFFFFF,t_70,g_se,x_16#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/375966269"> https://zhuanlan.zhihu.com/p/375966269</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/john_bh/article/details/106302026">https://blog.csdn.net/john_bh&#x2F;article&#x2F;details&#x2F;106302026</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Python/" class="print-no-link">#Python</a>
+      
+        <a href="/tags/CV/" class="print-no-link">#CV</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>YOLO5Face学习</div>
+      <div>https://cauccliu.github.io/2024/03/25/YOLO5Face/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 25, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/25/C%E8%AF%AD%E8%A8%80%E5%AE%9E%E7%8E%B0%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="C语言实现简单的WebServer服务器">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C语言实现简单的WebServer服务器</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/25/%E7%BD%91%E7%BB%9C%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="网络服务器">
+                        <span class="hidden-mobile">网络服务器</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

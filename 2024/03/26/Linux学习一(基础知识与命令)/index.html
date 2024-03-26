@@ -1,0 +1,716 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="Linux学习一 : 基础知识与命令基础Linux基础知识  Linux是一个基于文件的操作系统。操作系统需要和硬件进行交互, 对应Linux来说这些硬件都是文件，比如: 操作系统会将 硬盘, 鼠标, 键盘, 显示屏等抽象成一个设备文件来进行管理。   Linux内核：Linux有用户态和内核态两个空间，内核空间是linux的主要部分。Linux内核的主要组件有：系统调用接口、进程管理、内存管理、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux学习一(基础知识与命令)">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%B8%80(%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E4%B8%8E%E5%91%BD%E4%BB%A4)/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="Linux学习一 : 基础知识与命令基础Linux基础知识  Linux是一个基于文件的操作系统。操作系统需要和硬件进行交互, 对应Linux来说这些硬件都是文件，比如: 操作系统会将 硬盘, 鼠标, 键盘, 显示屏等抽象成一个设备文件来进行管理。   Linux内核：Linux有用户态和内核态两个空间，内核空间是linux的主要部分。Linux内核的主要组件有：系统调用接口、进程管理、内存管理、">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b3bbe1b6d76e4b729118dc6606f439c4.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/50acf89092ac41088347b48ffb9b3392.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/37146a73b1d842da866125b7e1219de4.png">
+<meta property="article:published_time" content="2024-03-26T12:40:52.442Z">
+<meta property="article:modified_time" content="2024-03-26T12:47:44.195Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png">
+  
+  
+  
+  <title>Linux学习一(基础知识与命令) - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux学习一(基础知识与命令)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 20:40" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux学习一(基础知识与命令)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Linux学习一-基础知识与命令"><a href="#Linux学习一-基础知识与命令" class="headerlink" title="Linux学习一 : 基础知识与命令"></a>Linux学习一 : 基础知识与命令</h1><h2 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h2><p><code>Linux基础知识</code></p>
+<blockquote>
+<p>Linux是一个基于文件的操作系统。<br>操作系统需要和硬件进行交互, 对应Linux来说这些硬件都是文件，比如: 操作系统会将 硬盘, 鼠标, 键盘, 显示屏等抽象成一个设备文件来进行管理。</p>
+</blockquote>
+<blockquote>
+<p>Linux内核：<br>Linux有用户态和内核态两个空间，内核空间是linux的主要部分。Linux内核的主要组件有：系统调用接口、进程管理、内存管理、虚拟文件系统、网络堆栈、设备驱动程序、硬件架构的相关代码。</p>
+</blockquote>
+<blockquote>
+<p><strong>系统调用接口</strong>：system call Interface：SCI层提供了某些机制执行从用户空间到内核的函数调用。<br><strong>进程管理</strong>：指的是系统对进程的多种状态之间转换的策略。Linux 下的进程调度有 3 种策略：</p>
+<ol>
+<li>SCHED_OTHER（分时调度策略（默认），是用于针对普通进程的时间片轮转调度策略。）</li>
+<li>SCHED_FIFO（实时调度策略，是针对运行的实时性要求比较高、运行时间短的进程调度策略）</li>
+<li>SCHED_RR（实时调度策略，是针对实时性要求比较高、运行时间比较长的进程调度策略。）</li>
+</ol>
+</blockquote>
+<p><strong>内存管理</strong>：</p>
+<ul>
+<li>内存管理是多个进程间的内存共享策略。</li>
+<li>在Linux中，内存管理主要说的是虚拟内存。虚拟内存可以让进程拥有比实际物理内存更大的内存，可以是实际内存的很多倍。</li>
+<li>每个进程的虚拟内存有不同的地址空间，多个进程的虚拟内存不会冲突。内存是按照所谓的内存页 方式进行管理的（对于大部分体系结构来说都是 4KB）。</li>
+<li>Linux 包括了管理可用内存的方式，以及物理和虚拟映射所使用的硬件机制。不过内存管理要管理的可不止 4KB 缓冲区。Linux 提供了对 4KB 缓冲区的抽象，例如 slab 分配器。这种内存管理模式使用 4KB 缓冲区为基数，然后从中分配结构，并跟踪内存页使用情况，比如哪些内存页是满的，哪些页面没有完全使用，哪些页面为空。这样就允许该模式根据系统需要来动态调整内存使用。</li>
+<li>为了支持多个用户使用内存，有时会出现可用内存被消耗光的情况。由于这个原因，页面可以移出内存并放入磁盘中。这个过程称为交换，因为页面会被从内存交换到硬盘上。</li>
+</ul>
+<p><strong>虚拟文件系统</strong>：虚拟文件系统（VFS）是 Linux 内核中非常有用的一个方面，因为它为文件系统提供了一个通用的接口抽象。在 Linux 下支持多种文件系统，如 ext、ext2、minix、umsdos、msdos、vfat、ntfs、proc、smb、ncp、iso9660、sysv、hpfs、affs 等。目前 Linux 下最常用的文件格式是 ext2 和 ext3。</p>
+<p><strong>网络堆栈</strong>：网络堆栈在设计上遵循模拟协议本身的分层体系结构。</p>
+<ul>
+<li>Internet Protocol (IP) 是传输协议（通常称为传输控制协议或 TCP）下面的核心网络层协议。</li>
+<li>TCP 上面是 socket 层，它是通过 SCI 进行调用的。</li>
+<li>socket 层是网络子系统的标准 API，它为各种网络协议提供了一个用户接口。</li>
+<li>从原始帧访问到 IP 协议数据单元（PDU），再到 TCP 和 User Datagram Protocol (UDP)，socket 层提供了一种标准化的方法来管理连接，并在各个终点之间移动数据。</li>
+</ul>
+<p><strong>设备驱动程序</strong>：Linux 内核中有大量代码都在设备驱动程序中，它们能够运转特定的硬件设备。Linux 源码树提供了一个驱动程序子目录，这个目录又进一步划分为各种支持设备，例如 Bluetooth、I2C、serial 等。</p>
+<p>**<code>进程间通信</code>**：Linux 操作系统支持多进程，进程之间需要进行数据的交流才能完成控制、协同工作等功能，Linux 的进程间通信是从 UNIX 系统继承过来的。Linux 下的进程间的通信方式主要有管道、信号、消息队列、共享内存和套接字等方法。</p>
+<p><code>命令解析器</code></p>
+<blockquote>
+<p>bash : 命令解析器需要依次搜索 PATH中的各个目录, 检查这些目录中是否有用户输入的指令。找不到的时候输出command not found。<br>有普通用户和root用户的区分。<br><strong>Tab键补全命令</strong>，由于很定shell命令的开头字母是相同的, 在这种情况下, 按一次Tab是不会自动补齐的，我们可以<strong>连续按两次Tab键，在当前终端中就可以显示出所有匹配成功的shell命令</strong>。</p>
+</blockquote>
+<h2 id="文件管理命令"><a href="#文件管理命令" class="headerlink" title="文件管理命令"></a>文件管理命令</h2><blockquote>
+<p>cd ：切换工作目录<br>ls：显示文件 ls -a 还可以显示隐藏文件， ls -l 显示详细信息，主要看文件时间和权限。rwx：读&#x2F;写&#x2F;执行<br>创建目录:mkdir<br>删除目录：rmdir<br>rm可以删除文件，也可以删除目录，rm -r 递归删除 -f强制删除文件， rm -rf 可以强制删除文件或目录。<br>cp：拷贝<br>mv：移动文件： 移动文件到上一级：mv file ..&#x2F;<br>cat：查看文件内容<br>more：可以用翻屏的方式查看内容，比cat高级一点。<br>head：查看文件头部的若干信息<br>tail：查看文件尾部的若干信息。<br>链接分两种类型: 软连接和硬链接。软连接相当于windows中的快捷方式，硬链接文件并不会进行拷贝，只是多出一个新的文件名并且硬链接计数会加1。<br>chmod：修改文件权限，用的也挺多的，.sh文件刚建立的时候不能直接运行，需要添加chmod +x run.sh，加上执行权限。<br>chown：修改文件所有者，基本没用过<br>tree：显示树状目录<br>pwd：pwd命令用户当前所在的工作目录, 没有参数, 直接执行该命令即可<br>touch：创建新的空文件。<br>which命令可以查看要执行的命令所在的实际路径, 命令解析器工作的时候也会搜索这个目录。<br> 可以用输出输入重定向进行文件内容的输入和输出。</p>
+</blockquote>
+<h2 id="用户管理命令"><a href="#用户管理命令" class="headerlink" title="用户管理命令"></a>用户管理命令</h2><p>linux是多用户系统，有的时候需要进行用户切换，用su或者su-。su只切换用户, 当前的工作目录不会变化, 但是使用 su -不仅会切换用户也会切换工作目录, 工作目录切换为当前用户的家目录。</p>
+<blockquote>
+<p>添加新用户需要使用adduser&#x2F;useradd命令来完成。<br>userdle命令才能删除用户在系统中的用户ID和所属组ID等相关信息，但是需要注意的是在某些Linux版本中用户虽然被删除了， 但是它的家目录却没有被删除，需要我们手动将其删除。<br>groupadd添加用户组, 使用 groupdel删除用户组。<br>passwd 修改密码</p>
+</blockquote>
+<h2 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h2><blockquote>
+<p>tar 涉及参数：<br>c：创建压缩文件<br>z: 使用gzip的方式进行文件压缩<br>j: 使用bzip2的方式进行文件压缩<br>v: 压缩过程中显示压缩信息, 可以省略不写<br>f: 指定压缩包的名字<br><img src="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+</blockquote>
+<p>解压缩</p>
+<blockquote>
+<p>怎么压缩就怎么解压缩，只不过c换成x<br>后缀多加上 -C文件名，可以将文件解压到指定的文件夹下。<br><img src="https://img-blog.csdnimg.cn/direct/b3bbe1b6d76e4b729118dc6606f439c4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+</blockquote>
+<blockquote>
+<p>zip需要自己安装，挺好用，用的时候搜一下。</p>
+</blockquote>
+<h2 id="查找命令"><a href="#查找命令" class="headerlink" title="查找命令"></a>查找命令</h2><blockquote>
+<p>find：根据文件的属性, 查找对应的磁盘文件。<br>find模糊查询的时候，用到两个符号，*和?，  *可以匹配多个字符，?匹配单个字符。<br>find 搜索路径 - type 文件类型，可以指定文件类型进行搜索。<br>find 搜索的路径 -size [+|-]文件大小 ，可以指定文件大小进行搜索。<br>-maxdepth: 最多搜索到第多少层目录<br>-mindepth: 至少从第多少层开始搜索<br>可以同时执行多个操作、<br>-<strong>exec 是find的参数, 可以在exec参数后添加其他需要被执行的shell命令</strong>。find 添加了 exec 参数之后, 命令的尾部需要加一个后缀 {} ;, 注意 {}和\之间需要有一个空格。<br>find 路径 参数 参数值 -exec shell命令2 {} \ ;<br><strong>在find 中 使用 xargs 关键字我们就可以使用管道</strong>。<br><img src="https://img-blog.csdnimg.cn/direct/50acf89092ac41088347b48ffb9b3392.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+</blockquote>
+<blockquote>
+<p>grep 命令用于查找文件里符合条件的字符串。<br>-r: 如果需要搜索目录中的文件内容, 需要进行递归操作, 必须指定该参数<br>-i: 对应要搜索的关键字, <strong>忽略字符大小写的差别</strong>.<br>-n: 在显示符合样式的那一行之前，标示出该行的列数编号<br><img src="https://img-blog.csdnimg.cn/direct/37146a73b1d842da866125b7e1219de4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+</blockquote>
+<blockquote>
+<p>locate：简化版的find, 使用这个命令我们可以根据文件名搜索本地的磁盘文件, 但是locate的效率比find要高很多。原因在于它不搜索具体目录，而是搜索一个本地的数据库文件，这个数据库中含有本地所有文件信息。Linux系统自动创建这个数据库，并且每天自动更新一次，所以使用locate命令查不到最新变动过的文件。为了避免这种情况，可以在使用locate之前，先使用updatedb命令，手动更新数据库。</p>
+</blockquote>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux学习一(基础知识与命令)</div>
+      <div>https://cauccliu.github.io/2024/03/26/Linux学习一(基础知识与命令)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%BA%8C(GCC%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93)/" title="Linux学习二(GCC/静态库动态库)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux学习二(GCC/静态库动态库)</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20Primer%E5%AD%A6%E4%B9%A0%E4%BA%8C/" title="C++ Primer学习二">
+                        <span class="hidden-mobile">C++ Primer学习二</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

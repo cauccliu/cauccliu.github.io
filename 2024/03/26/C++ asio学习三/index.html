@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="C++ asio学习三用智能指针延长session的生命周期问题：   客户端断开后：会触发服务器对应session的写或读事件，由于是异步编程，需要在回调中对读写事件进行处理。 客户端断开， 则应该析构掉该session。但是此时该session在asio底层回调队列中可能还有很多读写函数对象在排队等着执行 。 如果在某个读写回调对象把这个session析构掉了，那之后执行的读写回调函数可能会再">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ asio学习三">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E4%B8%89/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="C++ asio学习三用智能指针延长session的生命周期问题：   客户端断开后：会触发服务器对应session的写或读事件，由于是异步编程，需要在回调中对读写事件进行处理。 客户端断开， 则应该析构掉该session。但是此时该session在asio底层回调队列中可能还有很多读写函数对象在排队等着执行 。 如果在某个读写回调对象把这个session析构掉了，那之后执行的读写回调函数可能会再">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png">
+<meta property="article:published_time" content="2024-03-26T13:16:10.865Z">
+<meta property="article:modified_time" content="2024-03-26T13:16:45.232Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png">
+  
+  
+  
+  <title>C++ asio学习三 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++ asio学习三"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 21:16" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++ asio学习三</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="C-asio学习三"><a href="#C-asio学习三" class="headerlink" title="C++ asio学习三"></a>C++ asio学习三</h1><h2 id="用智能指针延长session的生命周期"><a href="#用智能指针延长session的生命周期" class="headerlink" title="用智能指针延长session的生命周期"></a>用智能指针延长session的生命周期</h2><p>问题：</p>
+<blockquote>
+<ul>
+<li><code>客户端断开后：会触发服务器对应session的写或读事件，由于是异步编程，需要在回调中对读写事件进行处理。</code></li>
+<li><code>客户端断开， 则应该析构掉该session。但是此时该session在asio底层回调队列中可能还有很多读写函数对象在排队等着执行 。 如果在某个读写回调对象把这个session析构掉了，那之后执行的读写回调函数可能会再次析构这个session。 </code></li>
+<li><code>所以我们需要保证， 在该session对应asio底层回调队列中，还存在将要执行的读写回调函数时，该session不被析构。通过智能指针来实现伪闭包，延长session的生命周期。</code></li>
+</ul>
+</blockquote>
+<ul>
+<li><p>智能指针传给函数对象，函数对象不释放，智能指针也就不会被释放掉。</p>
+</li>
+<li><p>把智能指针传递给session用的回调函数，函数内部再使用智能指针，这个时候智能指针就不被释放。</p>
+</li>
+<li><p>假如包含智能指针的函数没有调用怎么办？用lambda表达式和bind强制将智能指针中的shared_ptr加1。</p>
+</li>
+<li><p>构造一个伪闭包：</p>
+<ul>
+<li>利用智能指针被复制或使用引用计数加一的原理保证内存不被回收</li>
+<li><code>bind操作可以将值绑定在一个函数对象上生成新的函数对象</code>，如果将智能指针作为参数绑定给函数对象，<code>那么智能指针就以值的方式被新函数对象使用，那么智能指针的生命周期将和新生成的函数对象一致</code>，从而达到延长生命的效果。<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 包含智能指针的Server类。</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CServer</span><br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 构造函数</span><br>    <span class="hljs-built_in">CServer</span>(boost::asio::io_context&amp; io_context, <span class="hljs-type">short</span> port);<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">ClearSession</span><span class="hljs-params">(std::string uuid)</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">HandleAccept</span><span class="hljs-params">(std::shared_ptr&lt;CSession&gt;, <span class="hljs-type">const</span> boost::system::error_code&amp; error)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">StartAccept</span><span class="hljs-params">()</span></span>;<br>    boost::asio::io_context&amp; _io_context;<span class="hljs-comment">// 上下文</span><br>    <span class="hljs-type">short</span> _port;<span class="hljs-comment">// 端口</span><br>    tcp::acceptor _acceptor;<br>    <span class="hljs-comment">// 通过智能指针方式管理Session类，将acceptor接收的连接保存在Session类型的智能指针里。</span><br>    <span class="hljs-comment">// 在Server类中添加成员变量，该变量为一个map类型，key为Session的uid，value为该Session的智能指针。</span><br>    std::map&lt;std::string, std::shared_ptr&lt;CSession&gt;&gt; _sessions;<br>    <span class="hljs-comment">// 通过Server中的_sessions这个map管理链接，可以增加Session智能指针的引用计数，只有当Session从这个map中移除后，Session才会被释放。</span><br>    <br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">CSession</span> :<span class="hljs-keyword">public</span> std::enable_shared_from_this&lt;CSession&gt; &#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// 上下文初始化CSession，socket绑定上下文</span><br>    <span class="hljs-built_in">CSession</span>(boost::asio::io_context&amp; io_context, CServer* server);<br>    <span class="hljs-function">tcp::socket&amp; <span class="hljs-title">GetSocket</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> _socket; &#125;<br>    <span class="hljs-function">std::string&amp; <span class="hljs-title">GetUuid</span><span class="hljs-params">()</span> </span>&#123; <span class="hljs-keyword">return</span> _uuid; &#125;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Start</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Send</span><span class="hljs-params">(<span class="hljs-type">char</span>* msg, <span class="hljs-type">int</span> max_length)</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-keyword">enum</span> &#123; MAX_LENGTH = <span class="hljs-number">1024</span> &#125;;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">HandleRead</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, <span class="hljs-type">size_t</span>  bytes_transferred, std::shared_ptr&lt;CSession&gt; _self_shared)</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">HandleWrite</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, std::shared_ptr&lt;CSession&gt; _self_shared)</span></span>;<br>    tcp::socket _socket;<br>    std::string _uuid;<br>    <span class="hljs-type">char</span> _data[MAX_LENGTH];<br>    CServer* _server;<br>    std::queue&lt;std::shared_ptr&lt;MsgNode&gt; &gt; _send_que;<br>    std::mutex _send_lock;<br>    <br>&#125;;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// CServer类</span><br>CServer::<span class="hljs-built_in">CServer</span>(boost::asio::io_context&amp; io_context, <span class="hljs-type">short</span> port): _io_context(io_context), _acceptor(io_context, tcp::<span class="hljs-built_in">endpoint</span>(tcp::<span class="hljs-built_in">v4</span>(), port)) &#123;<br>	cout &lt;&lt; <span class="hljs-string">&quot;Server start success, on port: &quot;</span> &lt;&lt; port &lt;&lt; endl;<br>	<span class="hljs-built_in">StartAccept</span>();<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CServer::StartAccept</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-comment">// new_session虽然是一个局部变量，但是通过智能指针和bind操作，将new_session作为数值传递给bind函数。</span><br>	<span class="hljs-comment">// bind函数返回的函数对象内部引用了该new_session，所以引用计数加1，这样保证了new_session不会被释放。</span><br>	std::shared_ptr&lt;CSession&gt; new_session = <span class="hljs-built_in">make_shared</span>&lt;CSession&gt;(_io_context, <span class="hljs-keyword">this</span>);<br>	<span class="hljs-comment">// placeholders::_1 占位符的作用是给HandleAccept函数一个错误码关键字。</span><br>	_acceptor.<span class="hljs-built_in">async_accept</span>(new_session-&gt;<span class="hljs-built_in">GetSocket</span>(), std::<span class="hljs-built_in">bind</span>(&amp;CServer::HandleAccept, <span class="hljs-keyword">this</span>, new_session, placeholders::_1));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CServer::HandleAccept</span><span class="hljs-params">(std::shared_ptr&lt;CSession&gt; new_session, <span class="hljs-type">const</span> boost::system::error_code&amp; error)</span> </span>&#123;<br>	<span class="hljs-keyword">if</span> (!error) &#123;<br>		new_session-&gt;<span class="hljs-built_in">Start</span>();<br>		<span class="hljs-comment">// 在接收连接的逻辑里将Session放入map</span><br>		_sessions.<span class="hljs-built_in">insert</span>(<span class="hljs-built_in">make_pair</span>(new_session-&gt;<span class="hljs-built_in">GetUuid</span>(), new_session));<span class="hljs-comment">// make_pair是圆括号，不是尖括号</span><br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;session accept failed, error is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>	&#125;<br>	<span class="hljs-built_in">StartAccept</span>();<span class="hljs-comment">// 继续接收连接就是了</span><br>&#125;<br><br><span class="hljs-comment">// 将session从map中移除，当其引用计数为0时，自动释放</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CServer::ClearSession</span><span class="hljs-params">(std::string uuid)</span> </span>&#123;<br>	_sessions.<span class="hljs-built_in">erase</span>(uuid);<br>&#125;<br><br><br><span class="hljs-comment">// CSession类</span><br><span class="hljs-comment">// 构造函数</span><br>CSession::<span class="hljs-built_in">CSession</span>(boost::asio::io_context&amp; ioc, CServer* server) :_socket(ioc), _server(server) &#123;<br>	boost::uuids::uuid  a_uuid = boost::uuids::<span class="hljs-built_in">random_generator</span>()(); <span class="hljs-comment">//boost提供的生成唯一id的函数</span><br>	_uuid = boost::uuids::<span class="hljs-built_in">to_string</span>(a_uuid);<span class="hljs-comment">// 将随机数转成string</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::Start</span><span class="hljs-params">()</span> </span>&#123;<br>	<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>	<span class="hljs-comment">// 数据读到_data中，触发HandleRead回调，注意不能再定义一个智能指针。</span><br>	<span class="hljs-comment">// shared_from_this()函数可以还用当前的智能指针。</span><br>	_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>		std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead,<span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, <span class="hljs-built_in">shared_from_this</span>()));<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::HandleRead</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, <span class="hljs-type">size_t</span>  bytes_transferred, std::shared_ptr&lt;CSession&gt; _self_shared)</span> </span>&#123;<br>	<span class="hljs-keyword">if</span> (!error) &#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;read data is &quot;</span> &lt;&lt; _data &lt;&lt; endl;<br>		<span class="hljs-comment">//发送数据</span><br>		<span class="hljs-built_in">Send</span>(_data, bytes_transferred);<br>		<span class="hljs-comment">// 继续read，重复调用HandleRead</span><br>		<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>		_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH), std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>,<br>			std::placeholders::_1, std::placeholders::_2, _self_shared));<br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;handle write failed, error is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>		_server-&gt;<span class="hljs-built_in">ClearSession</span>(_uuid);<span class="hljs-comment">// 杀死session</span><br>	&#125;<br>&#125;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::HandleWrite</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, std::shared_ptr&lt;CSession&gt; _self_shared)</span> </span>&#123;<br>	<span class="hljs-keyword">if</span> (!error) &#123;<br>		<span class="hljs-comment">// 写数据的时候上锁</span><br>		<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(_send_lock)</span></span>;<br>		<span class="hljs-comment">// 调用HandleWrite，说明肯定已经发送完一个数据，这个时候弹出一下，后面只要发送队列不为空，就一直发送。</span><br>		_send_que.<span class="hljs-built_in">pop</span>();<br>		<span class="hljs-keyword">if</span> (!_send_que.<span class="hljs-built_in">empty</span>()) &#123;<br>			<span class="hljs-keyword">auto</span>&amp; msgnode = _send_que.<span class="hljs-built_in">front</span>();<br>			boost::asio::<span class="hljs-built_in">async_write</span>(_socket, boost::asio::<span class="hljs-built_in">buffer</span>(msgnode-&gt;_msg, msgnode-&gt;_total_len),<br>				std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleWrite, <span class="hljs-keyword">this</span>, std::placeholders::_1, _self_shared));<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;handle write failed, error is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>		_server-&gt;<span class="hljs-built_in">ClearSession</span>(_uuid);<span class="hljs-comment">// 杀死session</span><br>	&#125;<br>&#125;<br><br><span class="hljs-comment">// 实现发送接口</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::Send</span><span class="hljs-params">(<span class="hljs-type">char</span>* msg, <span class="hljs-type">int</span> max_length)</span> </span>&#123;<br>	<span class="hljs-type">bool</span> pending = <span class="hljs-literal">false</span>; <span class="hljs-comment">// pending为true表示上一次数据没有发完。</span><br>	<span class="hljs-function">std::lock_guard&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(_send_lock)</span></span>;<br>	<span class="hljs-keyword">if</span> (_send_que.<span class="hljs-built_in">size</span>() &gt; <span class="hljs-number">0</span>) &#123;<br>		pending = <span class="hljs-literal">true</span>;<br>	&#125;<br>	_send_que.<span class="hljs-built_in">push</span>(<span class="hljs-built_in">make_shared</span>&lt;MsgNode&gt;(msg, max_length)); <span class="hljs-comment">// 队列里有数据，就不发送了，让队列里面的回调函数发送就行了。</span><br>	<span class="hljs-keyword">if</span> (pending) &#123;<br>		<span class="hljs-keyword">return</span>;<br>	&#125;<br>	boost::asio::<span class="hljs-built_in">async_write</span>(_socket, boost::asio::<span class="hljs-built_in">buffer</span>(msg, max_length),<br>		std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleWrite,<span class="hljs-keyword">this</span>,std::placeholders::_1,<span class="hljs-built_in">shared_from_this</span>()));<br>&#125;<br><br></code></pre></td></tr></table></figure>
+
+<h2 id="处理粘包问题"><a href="#处理粘包问题" class="headerlink" title="处理粘包问题"></a>处理粘包问题</h2><p>粘包问题：<code>当客户端发送多个数据包给服务器时，服务器底层的tcp接收缓冲区收到的数据为粘连在一起的，是服务器的问题，不是客户端的问题。</code><br>客户端发送： hello world！   hello world！<br>服务器接收：hello world! hello     world!<br>客户端给服务器发送了两个hello world! 服务其TCP缓冲区接收了两次，但是第一次接收的数据粘包了。</p>
+<p><code>粘包原因：TCP发送数据的时候，数据逻辑性出了问题。</code></p>
+<ul>
+<li>TCP底层通信是面向字节流的，TCP只保证发送数据的准确性和顺序性，字节流以字节为单位。</li>
+<li>客户端每次发送N个字节给服务端，N取决于当前客户端的发送缓冲区是否有数据。比如发送缓冲区总大小为10字节，当前有5字节未发送完，那么此时只有5个字节的空闲时间。</li>
+<li>此时调用接口发送hello world!, 就只能发送hello给服务器，那么服务器这次接收到的数据很可能就是连着其他数据的hello，下次才能收到world！。</li>
+</ul>
+<p>还有其他产生粘包问题的原因： </p>
+<ol>
+<li>客户端的发送频率远高于服务器的接收频率，服务器接收不过来，就会导致数据在服务器的tcp接收缓冲区滞留形成粘连。</li>
+<li>tcp底层的安全和效率机制不允许字节数特别少的小包发送频率过高，tcp会在底层累计数据长度到一定大小才一起发送。</li>
+</ol>
+<ul>
+<li><code>处理粘包的方法</code>：<strong>主要采用应用层定义收发包格式的方式，这个过程俗称切包处理。用消息id+消息长度+消息内容的tlv协议去切割数据包。</strong></li>
+</ul>
+<p>在代码中对粘包进行处理：</p>
+<ul>
+<li>定义新的数据结构体，数据包含两部分：消息长度+消息内容，用额外的2字节去存储当前消息的长度。</li>
+<li>接收消息数据的CSession类也需要更新。</li>
+<li>数据初始化的时候，就要初始化头部信息。</li>
+</ul>
+<p>完善加上粘包处理后的逻辑：</p>
+<ul>
+<li>头部未解析：<ul>
+<li>收到的数据不是满足头部的大小:未处理的数据加上头部当前缓存的数据，如果小于2字节，就说明头部数据没有接收完。</li>
+<li>收到的数据比头部多：头部的信息已经接收完，取出头部信息。定义数据节点，取出数据信息。<ul>
+<li>若数据节点的长度&lt; 头部信息长度：数据还没收完。将数据放到接收节点中，更新信息。</li>
+<li>若数据节点的长度大于等于头部信息长度：取出首包全部数据，头部节点清楚一下，轮询切包。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>头部已解析：已经处理完头部，消息体没有接收完。<ul>
+<li>消息体还没有接收全：当前数据拷贝到消息节点里，继续监听对方发送。</li>
+<li>消息体长度够了，拷贝信息到消息节点，更新变量，把剩下的数据轮询切包。<br><img src="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::HandleRead</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, <span class="hljs-type">size_t</span>  bytes_transferred, std::shared_ptr&lt;CSession&gt; shared_self)</span> </span>&#123;<br>	<span class="hljs-keyword">if</span> (!error) &#123;<br>		<br>		<span class="hljs-comment">/** copy_len 已经移动的字符数：</span><br><span class="hljs-comment">			调用一次HandleRead：会返回总共收到的字节数，会从零开始处理到bytes_transferred这么大，中间会有一些其他的处理，</span><br><span class="hljs-comment">			copy_len表示处理到哪里了。</span><br><span class="hljs-comment">		*/</span> <br>		<span class="hljs-type">int</span> copy_len = <span class="hljs-number">0</span>; <span class="hljs-comment">//copy_len表示处理到哪里了</span><br>		<span class="hljs-keyword">while</span> (bytes_transferred &gt; <span class="hljs-number">0</span>) &#123;<br>			<span class="hljs-keyword">if</span> (!_b_head_parse) &#123; <span class="hljs-comment">// 最开始的时候头部肯定还没有被解析</span><br>				<span class="hljs-comment">// 先判断收到的数据是不是满足头部的大小:未处理的数据加上头部当前缓存的数据，如果小于2字节，就说明头部数据没有接收完</span><br>				<span class="hljs-keyword">if</span> (bytes_transferred + _recv_head_node-&gt;_cur_len &lt; HEAD_LENGTH) &#123;<br>					<span class="hljs-comment">// 将数据全部拷贝到头部节点</span><br>					<span class="hljs-built_in">memcpy</span>(_recv_head_node-&gt;_data + _recv_head_node-&gt;_cur_len, _data + copy_len, bytes_transferred);<br>					_recv_head_node-&gt;_cur_len += bytes_transferred;<span class="hljs-comment">//已经拷贝了，头部节点已经处理的长度就要更新</span><br>					::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<span class="hljs-comment">//清空</span><br>					<span class="hljs-comment">// 继续去监听读事件</span><br>					_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>						std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, shared_self));<br>					<span class="hljs-keyword">return</span>;<br>				&#125;<br>				<span class="hljs-keyword">else</span> &#123;<br>					<span class="hljs-comment">// 收到的数据比头部多</span><br>					<span class="hljs-comment">// 头部剩余未复制的长度</span><br>					<span class="hljs-type">int</span> head_remain = HEAD_LENGTH - _recv_head_node-&gt;_cur_len;<br>					<span class="hljs-built_in">memcpy</span>(_recv_head_node-&gt;_data + _recv_head_node-&gt;_cur_len, _data + copy_len, head_remain);<br>					<span class="hljs-comment">// 更新已处理的data长度copy_len 和 剩余未处理的长度bytes_transferred</span><br>					copy_len += head_remain;<br>					bytes_transferred -= head_remain;<br>					<span class="hljs-comment">// 获取头部数据 打印数据长度</span><br>					<span class="hljs-type">short</span> data_len = <span class="hljs-number">0</span>;<br>					<span class="hljs-built_in">memcpy</span>(&amp;data_len, _recv_head_node-&gt;_data, HEAD_LENGTH);<br>					cout &lt;&lt; <span class="hljs-string">&quot;data_len is &quot;</span> &lt;&lt; data_len &lt;&lt; endl;<br>					<span class="hljs-comment">//头部长度非法 断开连接</span><br>					<span class="hljs-keyword">if</span> (data_len &gt; MAX_LENGTH) &#123;<br>						std::cout &lt;&lt; <span class="hljs-string">&quot;invalid data length is &quot;</span> &lt;&lt; data_len &lt;&lt; endl;<br>						_server-&gt;<span class="hljs-built_in">ClearSession</span>(_uuid);<br>						<span class="hljs-keyword">return</span>;<br>					&#125;<br><br>					_recv_msg_node = <span class="hljs-built_in">make_shared</span>&lt;MsgNode&gt;(data_len); <span class="hljs-comment">//数据节点</span><br>					<span class="hljs-comment">// 消息的长度小于头部规定的长度，说明数据没有收全，则先将部分消息放在接收节点里</span><br>					<span class="hljs-keyword">if</span> (bytes_transferred &lt; data_len) &#123;<br>						<span class="hljs-comment">// 拷贝到节点里</span><br>						<span class="hljs-built_in">memcpy</span>(_recv_msg_node-&gt;_data + _recv_msg_node-&gt;_cur_len, _data + copy_len, bytes_transferred);<br>						_recv_msg_node-&gt;_cur_len += bytes_transferred;<br>						::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>						<span class="hljs-comment">// 继续去接收读事件把</span><br>						_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>							std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, shared_self));<br>						<span class="hljs-comment">//头部处理完成</span><br>						_b_head_parse = <span class="hljs-literal">true</span>;<br>						<span class="hljs-keyword">return</span>;<br>					&#125;<br><br>					<span class="hljs-comment">// 消息的长度大于等于头部规定的长度，说明这一节数据已经收齐了，可以读取接收了，需要进行切包。</span><br>					<span class="hljs-built_in">memcpy</span>(_recv_msg_node-&gt;_data + _recv_msg_node-&gt;_cur_len, _data + copy_len, data_len);<br>					_recv_msg_node-&gt;_cur_len += data_len;<br>					copy_len += data_len;<br>					bytes_transferred -= data_len;<br>					_recv_msg_node-&gt;_data[_recv_msg_node-&gt;_total_len] = <span class="hljs-string">&#x27;\0&#x27;</span>; <span class="hljs-comment">//第一个消息包的数据取完了</span><br>					cout &lt;&lt; <span class="hljs-string">&quot;receive data is &quot;</span> &lt;&lt; _recv_msg_node-&gt;_data &lt;&lt; endl;<br>					<span class="hljs-comment">//此处可以调用Send发送测试</span><br>					<span class="hljs-built_in">Send</span>(_recv_msg_node-&gt;_data, _recv_msg_node-&gt;_total_len);<br>					<br>					<span class="hljs-comment">//继续轮询剩余未处理数据</span><br>					_b_head_parse = <span class="hljs-literal">false</span>;<br>					_recv_head_node-&gt;<span class="hljs-built_in">Clear</span>();<br>					<span class="hljs-keyword">if</span> (bytes_transferred &lt;= <span class="hljs-number">0</span>) &#123;<br>						::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>						_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>							std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, shared_self));<br>						<span class="hljs-keyword">return</span>;<br>					&#125;<br>					<span class="hljs-keyword">continue</span>;<br>				&#125;<br>			&#125;<br><br>			<span class="hljs-keyword">else</span> &#123;<br>				<span class="hljs-comment">//已经处理完头部，处理上次未接受完的消息数据</span><br>				<span class="hljs-comment">//接收的数据仍不足剩余未处理的</span><br>				<span class="hljs-type">int</span> remain_msg = _recv_msg_node-&gt;_total_len - _recv_msg_node-&gt;_cur_len;<br>				<span class="hljs-comment">// 这次接收到的消息体，还不满足整合成一个数据结构体。</span><br>				<span class="hljs-keyword">if</span> (bytes_transferred &lt; remain_msg) &#123;<br>					<span class="hljs-built_in">memcpy</span>(_recv_msg_node-&gt;_data + _recv_msg_node-&gt;_cur_len, _data + copy_len, bytes_transferred);<br>					_recv_msg_node-&gt;_cur_len += bytes_transferred;<br>					::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>					_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>						std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, shared_self));<br>					<span class="hljs-keyword">return</span>;<br>				&#125;<br><br>				<span class="hljs-comment">// 接收的消息已经满足形成一个数据包结构体了，</span><br>				<span class="hljs-built_in">memcpy</span>(_recv_msg_node-&gt;_data + _recv_msg_node-&gt;_cur_len, _data + copy_len, remain_msg);<br>				_recv_msg_node-&gt;_cur_len += remain_msg;<br>				bytes_transferred -= remain_msg;<br>				copy_len += remain_msg;<br>				_recv_msg_node-&gt;_data[_recv_msg_node-&gt;_total_len] = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>				cout &lt;&lt; <span class="hljs-string">&quot;receive data is &quot;</span> &lt;&lt; _recv_msg_node-&gt;_data &lt;&lt; endl;<br>				<span class="hljs-comment">//此处可以调用Send发送测试</span><br>				<span class="hljs-built_in">Send</span>(_recv_msg_node-&gt;_data, _recv_msg_node-&gt;_total_len);<br>				<span class="hljs-comment">//继续轮询剩余未处理数据</span><br>				_b_head_parse = <span class="hljs-literal">false</span>;<br>				_recv_head_node-&gt;<span class="hljs-built_in">Clear</span>();<br>				<span class="hljs-keyword">if</span> (bytes_transferred &lt;= <span class="hljs-number">0</span>) &#123;<br>					::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>					_socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>						std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2, shared_self));<br>					<span class="hljs-keyword">return</span>;<br>				&#125;<br>				<span class="hljs-keyword">continue</span>;<br>			&#125;<br>		&#125;<br>	&#125;<br>	<span class="hljs-keyword">else</span> &#123;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;handle write failed, error is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>		_server-&gt;<span class="hljs-built_in">ClearSession</span>(_uuid);<span class="hljs-comment">// 杀死session</span><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>对于客户端：发送和接收数据的时候，也要先发送两个字节的数据长度，再发送数据消息的结构。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">try</span><br>	&#123;<br>		<span class="hljs-comment">// 创建上下文服务</span><br>		boost::asio::io_context   ioc;<br>		<span class="hljs-comment">//构造endpoint</span><br>		<span class="hljs-function">tcp::endpoint  <span class="hljs-title">remote_ep</span><span class="hljs-params">(asio::ip::address::from_string(<span class="hljs-string">&quot;127.0.0.1&quot;</span>), <span class="hljs-number">10086</span>)</span></span>;<br>		<span class="hljs-function">tcp::socket  <span class="hljs-title">sock</span><span class="hljs-params">(ioc)</span></span>;<br>		boost::system::error_code   error = boost::asio::error::host_not_found; ;<br>		sock.<span class="hljs-built_in">connect</span>(remote_ep, error);<br>		<span class="hljs-keyword">if</span> (error) &#123;<br>			cout &lt;&lt; <span class="hljs-string">&quot;connect failed, code is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">value</span>() &lt;&lt; <span class="hljs-string">&quot; error msg is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">message</span>();<br>			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>		&#125;<br><br>		std::cout &lt;&lt; <span class="hljs-string">&quot;Enter message: &quot;</span>;<br>		<span class="hljs-type">char</span> request[MAX_LENGTH];<br>		std::cin.<span class="hljs-built_in">getline</span>(request, MAX_LENGTH); <span class="hljs-comment">//输入数据</span><br>		<span class="hljs-type">size_t</span> request_length = <span class="hljs-built_in">strlen</span>(request);<br><br>		<span class="hljs-type">char</span> send_data[MAX_LENGTH] = &#123; <span class="hljs-number">0</span> &#125;;<br>		<span class="hljs-built_in">memcpy</span>(send_data, &amp;request_length, <span class="hljs-number">2</span>); <span class="hljs-comment">// 先首部2字节，构造数据长度</span><br>		<span class="hljs-built_in">memcpy</span>(send_data + <span class="hljs-number">2</span>, request, request_length); <span class="hljs-comment">// 再构造数据体</span><br>		boost::asio::<span class="hljs-built_in">write</span>(sock, boost::asio::<span class="hljs-built_in">buffer</span>(send_data, request_length + <span class="hljs-number">2</span>));<br><br>		<span class="hljs-type">char</span> reply_head[HEAD_LENGTH];<br>		<span class="hljs-type">size_t</span> reply_length = boost::asio::<span class="hljs-built_in">read</span>(sock, boost::asio::<span class="hljs-built_in">buffer</span>(reply_head, HEAD_LENGTH)); <span class="hljs-comment">// 先接收头部，获取信息长度</span><br>		<span class="hljs-type">short</span> msglen = <span class="hljs-number">0</span>;<br>		<span class="hljs-built_in">memcpy</span>(&amp;msglen, reply_head, HEAD_LENGTH);<br>		<span class="hljs-type">char</span> msg[MAX_LENGTH] = &#123; <span class="hljs-number">0</span> &#125;;<br>		<span class="hljs-type">size_t</span>  msg_length = boost::asio::<span class="hljs-built_in">read</span>(sock, boost::asio::<span class="hljs-built_in">buffer</span>(msg, msglen)); <span class="hljs-comment">// 再接收尾部</span><br><br>		std::cout &lt;&lt; <span class="hljs-string">&quot;Reply is: &quot;</span>;<br>		std::cout.<span class="hljs-built_in">write</span>(msg, msglen) &lt;&lt; endl;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;Reply len is &quot;</span> &lt;&lt; msglen;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br><br>	&#125;<br>	<span class="hljs-built_in">catch</span> (<span class="hljs-type">const</span> std::exception&amp; e)<br>	&#123;<br>		std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; <span class="hljs-string">&quot;\n&quot;</span>;<br>	&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="asio简易处理粘包问题的方法"><a href="#asio简易处理粘包问题的方法" class="headerlink" title="asio简易处理粘包问题的方法"></a>asio简易处理粘包问题的方法</h2><ol>
+<li>上面是通过<code>async_read_some函数监听读事件，绑定回调函数HandleRead。</code></li>
+<li>async_read_some 这个函数的特点是只要对端发数据，服务器接收到数据，即使没有收全对端发送的数据也会触发HandleRead函数。</li>
+<li>所以HandleRead函数的处理方式很复杂</li>
+<li><code>简单的方式可以用async_read函数，读取固定字节数。只有完全读完才会触发回调函数</code></li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 读取指定HEAD_LENGTH大小的字节数才触发HandleReadHead函数</span><br>boost::asio::<span class="hljs-built_in">async_read</span>(_socket, boost::asio::<span class="hljs-built_in">buffer</span>(_recv_head_node-&gt;_data, HEAD_LENGTH), std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleReadHead, <span class="hljs-keyword">this</span>, <br>        std::placeholders::_1, std::placeholders::_2, <span class="hljs-built_in">SharedSelf</span>()));<br></code></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>这样可以直接在HandleReadHead函数内处理头部信息：<ul>
+<li>解析头部，获取字符串长度，如果长度大于最大长度，数据非法</li>
+<li>字符串长度正常的话，调用HandleReadMsg函数，解析消息体。</li>
+<li>打印消息体，继续接收头部消息。<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::HandleReadMsg</span><span class="hljs-params">(<span class="hljs-type">const</span> boost::system::error_code&amp; error, <span class="hljs-type">size_t</span>  bytes_transferred,</span></span><br><span class="hljs-params"><span class="hljs-function">    std::shared_ptr&lt;CSession&gt; shared_self)</span> </span>&#123;<br>    <span class="hljs-keyword">if</span> (!error) &#123;<br>        <span class="hljs-built_in">PrintRecvData</span>(_data, bytes_transferred);<br>        std::<span class="hljs-function">chrono::milliseconds <span class="hljs-title">dura</span><span class="hljs-params">(<span class="hljs-number">2000</span>)</span></span>;<br>        std::this_thread::<span class="hljs-built_in">sleep_for</span>(dura);<br>        _recv_msg_node-&gt;_data[_recv_msg_node-&gt;_total_len] = <span class="hljs-string">&#x27;\0&#x27;</span>;<br>        cout &lt;&lt; <span class="hljs-string">&quot;receive data is &quot;</span> &lt;&lt; _recv_msg_node-&gt;_data &lt;&lt; endl;<br>        <span class="hljs-built_in">Send</span>(_recv_msg_node-&gt;_data, _recv_msg_node-&gt;_total_len);<br>        <span class="hljs-comment">//再次接收头部数据</span><br>        _recv_head_node-&gt;<span class="hljs-built_in">Clear</span>();<br>        boost::asio::<span class="hljs-built_in">async_read</span>(_socket, boost::asio::<span class="hljs-built_in">buffer</span>(_recv_head_node-&gt;_data, HEAD_LENGTH),<br>            std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleReadHead, <span class="hljs-keyword">this</span>, std::placeholders::_1, std::placeholders::_2,<br>                <span class="hljs-built_in">SharedSelf</span>()));<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        cout &lt;&lt; <span class="hljs-string">&quot;handle read msg failed,  error is &quot;</span> &lt;&lt; error.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>        <span class="hljs-built_in">Close</span>();<br>        _server-&gt;<span class="hljs-built_in">ClearSession</span>(_uuid);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<p>参考列表<br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1ys4y1D7Mu">https://www.bilibili.com/video/BV1ys4y1D7Mu</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="category-chain-item">网络编程</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/HTTP/" class="print-no-link">#HTTP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++ asio学习三</div>
+      <div>https://cauccliu.github.io/2024/03/26/C++ asio学习三/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E5%9B%9B/" title="C++ asio学习四">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">C++ asio学习四</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E4%BA%8C/" title="C++ asio学习二">
+                        <span class="hidden-mobile">C++ asio学习二</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

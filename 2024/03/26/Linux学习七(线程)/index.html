@@ -1,0 +1,727 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="Linux学习七 : 线程线程概述线程是轻量级的进程：在操作系统中，将一个进程划分为多个执行单元，每个单元拥有自己的堆栈、程序计数器和资源使用情况，但共享同一进程的地址空间和文件描述符等资源，这些执行单元就是线程。进程是资源分配的最小单位，线程是系统调度的最小单位。 线程特点：  线程的创建、切换和销毁都更加高效，占用的系统资源少。 线程提供了一种并发执行的机制，使得多个任务可以在同一个进程中并行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux学习七(线程)">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%B8%83(%E7%BA%BF%E7%A8%8B)/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="Linux学习七 : 线程线程概述线程是轻量级的进程：在操作系统中，将一个进程划分为多个执行单元，每个单元拥有自己的堆栈、程序计数器和资源使用情况，但共享同一进程的地址空间和文件描述符等资源，这些执行单元就是线程。进程是资源分配的最小单位，线程是系统调度的最小单位。 线程特点：  线程的创建、切换和销毁都更加高效，占用的系统资源少。 线程提供了一种并发执行的机制，使得多个任务可以在同一个进程中并行">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/88215159c901460a848b9e29cfdcfdf1.png">
+<meta property="article:published_time" content="2024-03-26T12:55:34.683Z">
+<meta property="article:modified_time" content="2024-03-26T12:56:24.258Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/88215159c901460a848b9e29cfdcfdf1.png">
+  
+  
+  
+  <title>Linux学习七(线程) - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux学习七(线程)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 20:55" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux学习七(线程)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Linux学习七-线程"><a href="#Linux学习七-线程" class="headerlink" title="Linux学习七 : 线程"></a>Linux学习七 : 线程</h1><h2 id="线程概述"><a href="#线程概述" class="headerlink" title="线程概述"></a>线程概述</h2><p><code>线程是轻量级的进程</code>：在操作系统中，将一个进程划分为多个执行单元，<strong>每个单元拥有自己的堆栈、程序计数器和资源使用情况</strong>，但<strong>共享同一进程的地址空间和文件描述符等资源</strong>，这些执行单元就是线程。<code>进程是资源分配的最小单位，线程是系统调度的最小单位。</code></p>
+<p>线程特点：</p>
+<ul>
+<li>线程的创建、切换和销毁都更加高效，占用的系统资源少。</li>
+<li>线程提供了一种并发执行的机制，使得多个任务可以在同一个进程中并行执行。</li>
+<li>不同线程之间可以通过共享内存等机制进行通信和同步，数据共享更加便捷，且避免了进程切换的开销。</li>
+<li>线程能够利用多核处理器的并发执行有事，提高系统的吞吐能力，一定程度下可以提升系统性能。CPU有多少个核就可以开多少个线程。</li>
+<li>由于线程共享进程的地址空间，因此需要注意线程之间的数据竞争和同步，调度资源并发编程问题，充分考虑线程安全和并发控制，以确保程序的正确性和稳定性。</li>
+</ul>
+<p>线程的实现主要通过引入线程组的概念来实现。每个进程都有一个主线程，也就是创建该进程的线程，当创建新的线程时，新的线程将与主线程一起组成一个线程组。</p>
+<p><code>多进程模型</code>：每个进程都有独立的地址空间、文件表信号表等资源。<br><code>多线程模型</code>：线程组内线程共享地址内存空间，文件表信号表等资源。</p>
+<p><code>实现多线程的目的</code>：为了更高效的利用CPU资源，线程相比于进程，创建、切换、通信、终止成本降低。<strong>线程（任务）的数量要根据具体的处理器数量来决定。假设只有一个处理器，那么划分太多线程可能会适得其反。因为很多时间都花在任务切换上了。<br>因此，在设计并发系统之前，一方面我们需要做好对于硬件性能的了解，另一方面需要对我们的任务有足够的认识。</strong></p>
+<p><code>线程的缺点</code></p>
+<ul>
+<li>安全性差：线程相互耦合，一个线程出错会影响其他线程。</li>
+<li>编程难度大：</li>
+<li>调试困难</li>
+<li>竞态条件和死锁：需要线程同步管理。</li>
+</ul>
+<h2 id="线程操作"><a href="#线程操作" class="headerlink" title="线程操作"></a>线程操作</h2><p><code>创建线程</code></p>
+<blockquote>
+<p>pthread_create：Linux下用于创建线程的函数，需要给线程一个处理函数，否则线程无法工作。<br>线程属性：可以在线程创建时指定的一组特性，用于控制线程的行为和特性。比如线程调度优先级，调度策略，线程栈空间大小。<br>pthread_self()：获取线程id。</p>
+</blockquote>
+<p><code>线程退出</code>：只要调用该函数当前线程就马上退出了，并且不会影响到其他线程的正常运行，不管是在子线程或者主线程中都可以使用。</p>
+<blockquote>
+<p>#include &lt;pthread.h&gt;<br>void pthread_exit(void *retval);retval是子线程的主线程会得到该数据。如果不需要使用，指定为NULL</p>
+</blockquote>
+<p><code>线程回收</code>：等待一个线程结束并回收器返回值和线程资源。pthread_join()，这个函数是一个阻塞函数，如果还有子线程在运行，调用该函数就会阻塞，子线程退出函数解除阻塞进行资源的回收，函数被调用一次，只能回收一个子线程。</p>
+<blockquote>
+<p>#include &lt;pthread.h&gt;<br>&#x2F;&#x2F; 这是一个阻塞函数, 子线程在运行这个函数就阻塞<br>&#x2F;&#x2F; 子线程退出, 函数解除阻塞, 回收对应的子线程资源, 类似于回收进程使用的函数 wait()<br>int pthread_join(pthread_t thread, void **retval);</p>
+</blockquote>
+<p><code>回收子线程数据的方法：</code></p>
+<blockquote>
+<ul>
+<li>用子线程栈区是不可以的，因为每个线程都有一个独立的栈区，子线程结束以后，数据不能回传给主线程。</li>
+<li>用堆区和全局数据区，是可以的，位于同一虚拟地址空间中的线程，虽然不能共享栈区数据，但是可以共享全局数据区和堆区数据，因此在子线程退出的时候可以将传出数据存储到全局变量、静态变量或者堆内存中。</li>
+<li>回传到主线程栈区是可以的，一般情况下主线程栈区都是最后退出的。</li>
+</ul>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;pthread.h&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::cerr;<br><span class="hljs-keyword">using</span> std::endl;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span><br>&#123;<br>    <span class="hljs-type">int</span> id;<br>    std::string name;<br>    <span class="hljs-type">int</span> age;<br>&#125;;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span> Person_GLOBAL;	<span class="hljs-comment">// 定义全局变量</span><br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">workingThread1</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span><br><span class="hljs-function"></span>&#123;   <br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span> p;<br>    p.age = <span class="hljs-number">27</span>;<br>    p.name= <span class="hljs-string">&quot;liubei&quot;</span>;<br>    p.id = <span class="hljs-number">1</span>;<br>    <span class="hljs-built_in">pthread_exit</span>(&amp;p);<span class="hljs-comment">// 该函数的参数将这个地址传递给了主线程的pthread_join()</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>; <span class="hljs-comment">// 代码执行不到这个位置就退出了</span><br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">workingThread2</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span><br><span class="hljs-function"></span>&#123;<br>    Person_GLOBAL.age = <span class="hljs-number">25</span>;<br>    Person_GLOBAL.name= <span class="hljs-string">&quot;guanyu&quot;</span>;<br>    Person_GLOBAL.id = <span class="hljs-number">2</span>;<br>    <span class="hljs-built_in">pthread_exit</span>(&amp;Person_GLOBAL);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">workingThread3</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span>* p = (<span class="hljs-keyword">struct</span> Person*)arg;<br>    p-&gt;age = <span class="hljs-number">24</span>;<br>    p-&gt;name= <span class="hljs-string">&quot;zhangfei&quot;</span>;<br>    p-&gt;id = <span class="hljs-number">3</span>;<br>    <span class="hljs-built_in">pthread_exit</span>(&amp;p);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-comment">// 创建子线程</span><br>    <span class="hljs-type">pthread_t</span> tid1;<br>    <span class="hljs-built_in">pthread_create</span>(&amp;tid1, <span class="hljs-literal">NULL</span>, workingThread1, <span class="hljs-literal">NULL</span>);<br>    <span class="hljs-type">void</span>* ptr1 = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-comment">// ptr是一个传出参数, 在函数内部让这个指针指向一块有效内存</span><br>    <span class="hljs-comment">// 这个内存地址就是pthread_exit() 参数指向的内存</span><br>    <span class="hljs-built_in">pthread_join</span>(tid1, &amp;ptr1);<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span>* p1 = (<span class="hljs-keyword">struct</span> Person*)ptr1;<br>    cout&lt;&lt;<span class="hljs-string">&quot;线程栈返回数据：&quot;</span>&lt;&lt;p1-&gt;id&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p1-&gt;age&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p1-&gt;name&lt;&lt;endl;<br><br>    <span class="hljs-type">pthread_t</span> tid2;<br>    <span class="hljs-built_in">pthread_create</span>(&amp;tid2, <span class="hljs-literal">NULL</span>, workingThread2, <span class="hljs-literal">NULL</span>);<br>    <span class="hljs-type">void</span>* ptr2 = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-built_in">pthread_join</span>(tid2, &amp;ptr2);<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span>* p2 = (<span class="hljs-keyword">struct</span> Person*)ptr2;<br>    cout&lt;&lt;<span class="hljs-string">&quot;全局变量返回数据：&quot;</span>&lt;&lt;p2-&gt;id&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p2-&gt;age&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p2-&gt;name&lt;&lt;endl;<br><br>    <span class="hljs-type">pthread_t</span> tid3;<br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">Person</span> p;<br>    <span class="hljs-built_in">pthread_create</span>(&amp;tid3, <span class="hljs-literal">NULL</span>, workingThread3, &amp;p);<br>    <span class="hljs-type">void</span>* ptr3 = <span class="hljs-literal">NULL</span>;<br>    <span class="hljs-built_in">pthread_join</span>(tid3, &amp;ptr3);<br>    cout&lt;&lt;<span class="hljs-string">&quot;主线程栈返回数据：&quot;</span>&lt;&lt;p.id&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p.age&lt;&lt;<span class="hljs-string">&quot; &quot;</span>&lt;&lt;p.name&lt;&lt;endl;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>最终运行的结果中子线程栈空间的数据丢失。<br><img src="https://img-blog.csdnimg.cn/direct/88215159c901460a848b9e29cfdcfdf1.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><code>线程分离</code>：将一个线程从它的创建线程中分离出来，使得该线程不会成为“僵尸线程”，从而避免资源泄露和内存占用的问题。不需要其他线程调用pthread_join()函数来等待其终止，但是在终止后不能再重连。</p>
+<blockquote>
+<p>pthread_detach(tid);线程分离。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;pthread.h&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::cerr;<br><span class="hljs-keyword">using</span> std::endl;<br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">working</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span><br><span class="hljs-function"></span>&#123;<br>    cout&lt;&lt;<span class="hljs-string">&quot;子线程ID: &quot;</span>&lt;&lt;<span class="hljs-built_in">pthread_self</span>()&lt;&lt;endl;<br>    cout&lt;&lt;<span class="hljs-string">&quot;参数: &quot;</span>&lt;&lt;(<span class="hljs-type">char</span>*)arg&lt;&lt;endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">create</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">pthread_t</span> tid;<br>    <span class="hljs-type">char</span>* arg= <span class="hljs-string">&quot;hello&quot;</span>;<br>    <span class="hljs-type">int</span> ret = <span class="hljs-built_in">pthread_create</span>(&amp;tid, <span class="hljs-literal">NULL</span>, working, arg);<br>    <span class="hljs-keyword">if</span>(ret == <span class="hljs-number">-1</span>)&#123;<br>        cerr&lt;&lt;<span class="hljs-string">&quot;pthread_create&quot;</span>&lt;&lt;endl;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 设置子线程和主线程分离</span><br>    <span class="hljs-built_in">pthread_detach</span>(tid);<br>    <span class="hljs-comment">// 让主线程自己退出即可</span><br>    <span class="hljs-built_in">pthread_exit</span>(<span class="hljs-literal">NULL</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">create</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p><code>线程终止</code>：</p>
+<ul>
+<li>自然终止</li>
+<li>调用exit()函数：立即终止整个进程，包括所有线程。</li>
+<li>pthread_cancel()函数：线程取消</li>
+<li>pthread_kill()函数：杀死线程。</li>
+<li>pthread_exit()函数：显式退出线程</li>
+</ul>
+<p><code>线程取消</code>：在一个线程中杀死另一个线程，需要分两步：</p>
+<ol>
+<li>在线程A中调用线程取消函数pthread_cancel，指定杀死线程B，这时候线程B是死不了的。</li>
+<li>在线程B中进程一次系统调用（从用户区切换到内核区），否则线程B可以一直运行。</li>
+</ol>
+<p>线程取消的类型：</p>
+<ul>
+<li>异步取消：立即取消线程，但是可能会出现无法清理，资源泄露的情况。</li>
+<li>延迟取消：在取消点检查是否请求取消。如IO操作，线程等待函数等。</li>
+</ul>
+<blockquote>
+<p>pthread_cancel()函数：线程取消。<br>pthread_setcanceltype()函数：设置线程取消的取消类型。</p>
+</blockquote>
+<h2 id="C-线程类"><a href="#C-线程类" class="headerlink" title="C++线程类"></a>C++线程类</h2><p>C++11中提供的线程类为std::thread，基于这个类创建一个新的线程非常的简单，只需要提供线程函数或者函数对象即可，并且可以同时指定线程函数的参数。作为一个类，类的构造函数，移动构造都有，但是不允许拷贝线程对象。</p>
+<blockquote>
+<p>std::thread t1(); 可以传线程执行函数，以及函数所需参数。<br>std::thread::id get_id() const noexcept; 获取线程ID。<br>void join(); 回收线程<br>void detch(); 线程分离<br>bool joinable() const noexcept; 用于判断主线程和子线程是否处理关联（连接）状态。<br>&#x2F;&#x2F; move (1)	<br>thread&amp; operator&#x3D; (thread&amp;&amp; other) noexcept;<br>&#x2F;&#x2F; copy [deleted] (2)	<br>thread&amp; operator&#x3D; (const other&amp;) &#x3D; delete; 线程中的资源是不能被复制的，因此通过&#x3D;操作符进行赋值操作最终并不会得到两个完全相同的对象。只能进行线程资源的转移，直接拷贝赋值是不被允许的。<br>static unsigned hardware_concurrency() noexcept; 获取当前计算机的CPU核数，根据这个结果在程序中创建出数量相等的线程，每个线程独自占有一个CPU核心，这些线程就不用分时复用CPU时间片，此时程序的并发效率是最高的。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;thread&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;memory&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><span class="hljs-keyword">using</span> std::thread;<br><span class="hljs-keyword">using</span> std::string;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">func</span><span class="hljs-params">()</span></span>&#123;<br>        cout&lt;&lt;<span class="hljs-string">&quot;hello func&quot;</span>&lt;&lt;endl;<br>    &#125;<br>&#125;;<br><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">printHW</span><span class="hljs-params">(string msg)</span></span>&#123;<br>    cout&lt;&lt;msg&lt;&lt;endl;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">int</span> num = thread::<span class="hljs-built_in">hardware_concurrency</span>();<br>    cout &lt;&lt; <span class="hljs-string">&quot;CPU number: &quot;</span> &lt;&lt; num &lt;&lt; endl;<br>    <span class="hljs-function">thread <span class="hljs-title">t1</span><span class="hljs-params">(printHW,<span class="hljs-string">&quot;Happy new year&quot;</span>)</span></span>;<br>    <span class="hljs-keyword">if</span>(t1.<span class="hljs-built_in">joinable</span>())&#123;<br>        t1.<span class="hljs-built_in">join</span>();<span class="hljs-comment">// 等待t1执行完成</span><br>    &#125;<br><br>    std::shared_ptr&lt;A&gt; a = std::<span class="hljs-built_in">make_shared</span>&lt;A&gt;();<br>    <span class="hljs-function">thread <span class="hljs-title">t2</span><span class="hljs-params">(&amp;A::func, a)</span></span>;<br>    <span class="hljs-keyword">if</span>(t2.<span class="hljs-built_in">joinable</span>())&#123;<br>        t2.<span class="hljs-built_in">join</span>();<span class="hljs-comment">// 等待t1执行完成</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+
+<p>参考列表<br><a target="_blank" rel="noopener" href="https://subingwen.cn/linux/thread/">https://subingwen.cn/linux/thread/</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Xb4y1u7gR/">https://www.bilibili.com/video/BV1Xb4y1u7gR/</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1d841117SH">https://www.bilibili.com/video/BV1d841117SH</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux学习七(线程)</div>
+      <div>https://cauccliu.github.io/2024/03/26/Linux学习七(线程)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E5%85%AB(%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5)/" title="Linux学习八(线程同步)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux学习八(线程同步)</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E5%85%AD(%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1)/" title="Linux学习六(进程间通信)">
+                        <span class="hidden-mobile">Linux学习六(进程间通信)</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

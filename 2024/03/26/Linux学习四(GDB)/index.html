@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="Linux学习四 : GDB在细节上，GDB调试工具更加强大 123456789101112131415161718192021#include &lt;iostream&gt;using std::cout;using std::endl;int func(int n)&amp;#123;	int sum &#x3D; 0;	for(int i&#x3D;0;i&lt;n;i++)&amp;#123;		sum+&#x3D;i;	&amp;#125">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux学习四(GDB)">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E5%9B%9B(GDB)/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="Linux学习四 : GDB在细节上，GDB调试工具更加强大 123456789101112131415161718192021#include &lt;iostream&gt;using std::cout;using std::endl;int func(int n)&amp;#123;	int sum &#x3D; 0;	for(int i&#x3D;0;i&lt;n;i++)&amp;#123;		sum+&#x3D;i;	&amp;#125">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/7bbbf6a2e579498c95f4a8aed60e3dfc.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/ec611bad36564e7588288735615e11b0.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/60bc34bd2c5f4507bc4ef808df58a1b7.png">
+<meta property="article:published_time" content="2024-03-26T12:49:51.788Z">
+<meta property="article:modified_time" content="2024-03-26T12:50:53.804Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/7bbbf6a2e579498c95f4a8aed60e3dfc.png">
+  
+  
+  
+  <title>Linux学习四(GDB) - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux学习四(GDB)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 20:49" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux学习四(GDB)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Linux学习四-GDB"><a href="#Linux学习四-GDB" class="headerlink" title="Linux学习四 : GDB"></a>Linux学习四 : GDB</h1><p><code>在细节上，GDB调试工具更加强大</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">func</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span></span>&#123;<br>	<span class="hljs-type">int</span> sum = <span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;n;i++)&#123;<br>		sum+=i;<br>	&#125;<br>	<span class="hljs-keyword">return</span> sum;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>	<span class="hljs-type">long</span> result =<span class="hljs-number">0</span>;<br>	<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">50</span>;i++)&#123;<br>    	result+=i;<br>    &#125;<br>    cout&lt;&lt;<span class="hljs-string">&quot;result[1-50] =&quot;</span> &lt;&lt;result&lt;&lt;endl;<br>    cout&lt;&lt;<span class="hljs-string">&quot;result[1-60] =&quot;</span> &lt;&lt;<span class="hljs-built_in">func</span>(<span class="hljs-number">60</span>)&lt;&lt;endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li>若要调试，在编译的过程中要加上-g。</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs powershell">CC = g++ <span class="hljs-literal">-std</span>=c++<span class="hljs-number">14</span><br>CFLAGS = <span class="hljs-literal">-g</span> <span class="hljs-literal">-Wall</span><br><br>main:<br>	<span class="hljs-variable">$</span>(CC) <span class="hljs-variable">$</span>(CFLAGS) <span class="hljs-literal">-o</span> main main.cpp<br><br>.PHONY:clean<br>clean:<br>	<span class="hljs-built_in">rm</span> <span class="hljs-operator">-f</span> main *.o<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>启动gdb进程, 指定需要gdb调试的应用程序名称。<blockquote>
+<p>gdb main</p>
+<ol>
+<li>set args .. 可以设置参数 show args 查看设置的命令行参数</li>
+<li>l l(小写L)命令相当于list，从第一行开始例出原码。</li>
+<li>直接回车表示，重复上一次命令.</li>
+<li>打断点：break 行数，或者函数名，代表函数入口。</li>
+<li>info break 查看断点信息。</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs powershell">liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> gdb main<br>GNU gdb (Ubuntu <span class="hljs-number">8.1</span>.<span class="hljs-number">1</span><span class="hljs-literal">-0ubuntu1</span>) <span class="hljs-number">8.1</span>.<span class="hljs-number">1</span><br>Copyright (C) <span class="hljs-number">2018</span> Free Software Foundation, Inc.<br>License GPLv3+: GNU GPL version <span class="hljs-number">3</span> or later &lt;http://gnu.org/licenses/gpl.html&gt;<br>This is free software: you are free to change and redistribute it.<br>There is NO WARRANTY, to the extent permitted by law.  <span class="hljs-built_in">Type</span> <span class="hljs-string">&quot;show copying&quot;</span><br>and <span class="hljs-string">&quot;show warranty&quot;</span> <span class="hljs-keyword">for</span> details.<br>This GDB was configured as <span class="hljs-string">&quot;x86_64-linux-gnu&quot;</span>.<br><span class="hljs-built_in">Type</span> <span class="hljs-string">&quot;show configuration&quot;</span> <span class="hljs-keyword">for</span> configuration details.<br><span class="hljs-keyword">For</span> bug reporting instructions, please see:<br>&lt;http://www.gnu.org/software/gdb/bugs/&gt;.<br>Find the GDB manual and other documentation resources online at:<br>&lt;http://www.gnu.org/software/gdb/documentation/&gt;.<br><span class="hljs-keyword">For</span> help, <span class="hljs-built_in">type</span> <span class="hljs-string">&quot;help&quot;</span>.<br><span class="hljs-built_in">Type</span> <span class="hljs-string">&quot;apropos word&quot;</span> to search <span class="hljs-keyword">for</span> commands related to <span class="hljs-string">&quot;word&quot;</span>...<br>Reading symbols from main...done.<br>(gdb) l<br><span class="hljs-number">101</span><br><span class="hljs-number">102</span>     <span class="hljs-comment">#include &lt;iostream&gt;</span><br><span class="hljs-number">103</span>     <span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-number">104</span>     <span class="hljs-keyword">using</span> std::endl;<br><span class="hljs-number">105</span><br><span class="hljs-number">106</span>     int func(int n)&#123;<br><span class="hljs-number">107</span>             int sum = <span class="hljs-number">0</span>;<br><span class="hljs-number">108</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br><span class="hljs-number">109</span>                     sum+=i;<br><span class="hljs-number">110</span>             &#125;<br>(gdb) l<br><span class="hljs-number">111</span>             <span class="hljs-keyword">return</span> sum;<br><span class="hljs-number">112</span>     &#125;<br><span class="hljs-number">113</span><br><span class="hljs-number">114</span>     int main()&#123;<br><span class="hljs-number">115</span>             long result =<span class="hljs-number">0</span>;<br><span class="hljs-number">116</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">50</span>;i++)&#123;<br><span class="hljs-number">117</span>             result+=i;<br><span class="hljs-number">118</span>         &#125;<br><span class="hljs-number">119</span>         cout&lt;&lt;<span class="hljs-string">&quot;result[1-50] =&quot;</span> &lt;&lt;result&lt;&lt;endl;<br><span class="hljs-number">120</span>         cout&lt;&lt;<span class="hljs-string">&quot;result[1-60] =&quot;</span> &lt;&lt;func(<span class="hljs-number">60</span>)&lt;&lt;endl;<br>(gdb) l<br><span class="hljs-number">121</span>         <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><span class="hljs-number">122</span>     &#125;(gdb) <br>Line number <span class="hljs-number">123</span> out of range; main.cpp has <span class="hljs-number">122</span> lines.<br>(gdb) <span class="hljs-keyword">break</span> <span class="hljs-number">115</span><br>Breakpoint <span class="hljs-number">1</span> at <span class="hljs-number">0</span>x991: file main.cpp, line <span class="hljs-number">115</span>.<br>(gdb) <span class="hljs-keyword">break</span> func<br>Breakpoint <span class="hljs-number">2</span> at <span class="hljs-number">0</span>x961: file main.cpp, line <span class="hljs-number">107</span>.<br>(gdb) info <span class="hljs-keyword">break</span> <br>Num     <span class="hljs-built_in">Type</span>           Disp Enb Address            What<br><span class="hljs-number">1</span>       breakpoint     keep y   <span class="hljs-number">0</span>x0000000000000991 <span class="hljs-keyword">in</span> main() at main.cpp:<span class="hljs-number">115</span><br><span class="hljs-number">2</span>       breakpoint     keep y   <span class="hljs-number">0</span>x0000000000000961 <span class="hljs-keyword">in</span> func(int) at main.cpp:<span class="hljs-number">107</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<ol start="6">
+<li>r 运行程序 r是run的缩写。会在断点处挺住</li>
+<li>n单条执行语句，next命令简写。</li>
+<li>c 继续执行程序，continue命令简写。</li>
+<li>p打印变量的值，print命令简写。</li>
+</ol>
+</blockquote>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs powershell">(gdb) <span class="hljs-built_in">r</span><br>Starting program: /home/liuchang/codetest/main <br><br>Breakpoint <span class="hljs-number">1</span>, main () at main.cpp:<span class="hljs-number">115</span><br><span class="hljs-number">115</span>             long result =<span class="hljs-number">0</span>;<br>(gdb) n<br><span class="hljs-number">116</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">50</span>;i++)&#123;<br>(gdb) n<br><span class="hljs-number">117</span>             result+=i;<br>(gdb) n<br><span class="hljs-number">116</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">50</span>;i++)&#123;<br>(gdb) n<br><span class="hljs-number">117</span>             result+=i;<br>(gdb) c<br>Continuing.<br>result[<span class="hljs-number">1</span>-<span class="hljs-number">50</span>] =<span class="hljs-number">1275</span><br><br>Breakpoint <span class="hljs-number">2</span>, func (n=<span class="hljs-number">60</span>) at main.cpp:<span class="hljs-number">107</span><br><span class="hljs-number">107</span>             int sum = <span class="hljs-number">0</span>;<br>(gdb) n<br><span class="hljs-number">108</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>(gdb) p i<br><span class="hljs-variable">$1</span> = <span class="hljs-number">0</span><br>(gdb) n<br><span class="hljs-number">109</span>                     sum+=i;<br>(gdb) n<br><span class="hljs-number">108</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>(gdb) p i<br><span class="hljs-variable">$2</span> = <span class="hljs-number">1</span><br>(gdb) n<br><span class="hljs-number">109</span>                     sum+=i;<br>(gdb) n<br><span class="hljs-number">108</span>             <span class="hljs-keyword">for</span>(int i=<span class="hljs-number">1</span>;i&lt;=n;i++)&#123;<br>(gdb) p i<br><span class="hljs-variable">$3</span> = <span class="hljs-number">2</span><br>(gdb) <br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<ol start="10">
+<li>bt 查看堆栈</li>
+<li>finish退出函数</li>
+<li>q退出gdb</li>
+</ol>
+</blockquote>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs powershell">(gdb) bt <br><span class="hljs-comment">#0  func (n=60) at main.cpp:109</span><br><span class="hljs-comment">#1  0x0000000008000a0f in main () at main.cpp:120</span><br>(gdb) finish<br>Run till <span class="hljs-keyword">exit</span> from <span class="hljs-comment">#0  func (n=60) at main.cpp:109</span><br><span class="hljs-number">0</span>x0000000008000a0f <span class="hljs-keyword">in</span> main () at main.cpp:<span class="hljs-number">120</span><br><span class="hljs-number">120</span>         cout&lt;&lt;<span class="hljs-string">&quot;result[1-60] =&quot;</span> &lt;&lt;func(<span class="hljs-number">60</span>)&lt;&lt;endl;<br>Value returned is <span class="hljs-variable">$5</span> = <span class="hljs-number">1830</span><br>(gdb) c<br>Continuing.<br>result[<span class="hljs-number">1</span>-<span class="hljs-number">60</span>] =<span class="hljs-number">1830</span><br>[<span class="hljs-type">Inferior</span> <span class="hljs-number">1</span> (<span class="hljs-type">process</span> <span class="hljs-number">26871</span>) <span class="hljs-type">exited</span> <span class="hljs-type">normally</span>]<br>(gdb) q<br></code></pre></td></tr></table></figure>
+<hr>
+<p><code>使用gdb</code></p>
+<ul>
+<li>如果没有-g，将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。</li>
+<li><strong>启动GDB的方法</strong>：<ul>
+<li>gdb program ：程序一般在当前目录下。</li>
+<li>gdb program.core ： 用gdb同时调试一个运行程序和core文件，core是程序非法执行后core dump后产生的文件。</li>
+<li>gdb program PID：那么你可以指定这个服务程序运行时的进程ID。gdb会自动attach上去，并调试他。program应该在PATH环境变量中搜索得到。</li>
+</ul>
+</li>
+</ul>
+<p>GDB启动时，可以加一些GDB的启动开关，一般比较常用的就是符号表 -s -c coredump的core文件，-d 添加一个源文件的路径。</p>
+<h2 id="gdb的常用命令"><a href="#gdb的常用命令" class="headerlink" title="gdb的常用命令"></a>gdb的常用命令</h2><blockquote>
+<p>b break的缩写，加断点。<br>info break [n]  查看断点<br>l  list 缩写查看源码<br>c continue缩写，恢复运行。<br><strong>step命令可以缩写为s</strong>, 命令被执行一次代码被向下执行一行，如果这一行是一个函数调用，那么程序会进入到函数体内部。<br><strong>n next缩写，单步跟踪程序</strong>。next命令和step命令功能是相似的，只是在使用next调试程序的时候不会进入到函数体内部。<br>p print缩写，可以查看变量值。<br>p file::variable 某文件中的变量<br>p function::variable 全局变量<br>p *array@len 查看数组内容。<br>p&#x2F;x 十六进制格式显示变量。其他格式的变量也有。<br>display i 变量自动显示。<br>whatis para 查看para的类型<br>finish 运行程序，直到当前程序函数完成，并打印函数返回时的堆栈地址和返回值及参数值等信息。<br>until 或 u 运行程序直到结束循环结构。<br>info agrs 查看函数名和参数值<br>info locals 打印当前函数中所有局部变量及其值<br>info line查看源代码内存地址<br>disassemble func 可以查看函数func的汇编代码。<br>set listsize n 设置一次显示源代码的行数。<br>q quit的缩写，退出gdb。</p>
+</blockquote>
+<blockquote>
+<p>set args 可指定运行时参数。如：set args 10 20 30 40 50<br>show args 命令可以查看设置好的运行参数。<br>path dir 可设定程序的运行路径。<br>show paths<br>cd &#x2F; pwd<br>run &gt; outfile重定向输出</p>
+</blockquote>
+<blockquote>
+<p>tty命令可以指写输入输出的终端设备。如：tty &#x2F;dev&#x2F;ttyb</p>
+</blockquote>
+<p><code>调试已经运行的程序</code><br>两种方法：<br>1、在UNIX下用ps查看正在运行的程序的PID（进程ID），然后用<strong>gdb program PID</strong>格式挂接正在运行的程序。<br>2、先用gdb program关联上源代码，并进行gdb，在gdb中用<strong>attach命令</strong>来挂接进程的PID。并用<strong>detach来取消挂接</strong>的进程。</p>
+<p><code>暂停/恢复程序</code><br>在gdb中，我们可以有以下几种暂停方式：断点（BreakPoint）、观察点（WatchPoint）、捕捉点（CatchPoint）、信号（Signals）、线程停止（Thread Stops）。如果要恢复程序运行，可以使用c或是continue命令。</p>
+<blockquote>
+<p>break设置断点：</p>
+<ol>
+<li><strong>break function</strong> ：在函数入口处断点。</li>
+<li><strong>break linenum</strong>：在行号处断点。</li>
+<li>break +&#x2F;- offset：在当前偏移量行挺住</li>
+<li><strong>break filename:linenum</strong> 在源文件filename的linenum行处停住</li>
+<li>break filename:function 在源文件filename的function函数的入口处停住。</li>
+<li>break *address 在程序运行的内存地址处停住。</li>
+<li>break命令没有参数时，表示在下一条指令处停住。</li>
+<li><strong>break … if condition</strong>：condition表示条件，在条件成立时停住。比如在循环境体中，可以设置break if i&#x3D;100，表示当i为100时停住程序。</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>watch 设置观察点，观察表达式是否发生变化<br>catchpoint 设置捕捉点，如：载入共享库（动态链接库）或是C++的异常。</p>
+</blockquote>
+<p><code>维护断点</code></p>
+<blockquote>
+<p>clear delete 删除断点。<br>disable 停止使用断点 enable 继续使用<br>condition 设置断点停止条件。<br>ignore 忽视断点。<br><code>在断点处使用</code> commands ：可以在断点处加上命令处理语句。<br>break function 告诉断点在哪个重载函数处加断点。</p>
+</blockquote>
+<p><code>设置变量值</code><br>在调试程序的时候, 我们需要在某个变量等于某个特殊值的时候查看程序的运行状态, 但是通过程序运行让变量等于这个值又非常困难, 这种情况下就可以在 gdb 中直接对这个变量进行值的设置, 或者是在单步调试的时候通过设置循环因子的值直接跳出某个循环, 值设置的命令格式为: <strong>set var 变量名&#x3D;值</strong>。</p>
+<p><code>线程</code><br>如果程序是多线程的话，可以定义断点是否在所有的线程上，或是在某个特定的线程。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">break</span> &lt;linespec&gt; thread &lt;threadno&gt;<br><span class="hljs-keyword">break</span> &lt;linespec&gt; thread &lt;threadno&gt; <span class="hljs-keyword">if</span> ...<br></code></pre></td></tr></table></figure>
+<p>linespec指定了断点设置在的源程序的行号。threadno指定了线程的ID，ID是GDB分配的，可以通过“info threads”命令来查看正在运行程序中的线程信息。如果不指定thread &lt; threadno &gt;则表示你的断点设在所有线程上面，还可以为某线程指定断点条件。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell">(gdb) <span class="hljs-keyword">break</span> frik.c:<span class="hljs-number">13</span> thread <span class="hljs-number">28</span> <span class="hljs-keyword">if</span> bartab &gt; lim<br></code></pre></td></tr></table></figure>
+
+<p><code>栈信息</code></p>
+<blockquote>
+<p>bt 查看栈信息<br>bt n 查看栈顶n层信息<br>bt -n 表示栈底下n层的栈信息<br>frame n 切换栈<br>up n 栈向上移动<br>down n 栈向下移动<br>info frame&#x2F;f 打印栈的层编号，当前的函数名，函数参数值，函数所在文件及行号，函数执行到的语句。</p>
+</blockquote>
+<p>搜索源代码：字符串的正则表达式。<br>search<br>forward-search<br>向前搜索<br>reverse-search 全部搜索。</p>
+<p><code>改变程序的执行</code></p>
+<blockquote>
+<p>print x&#x3D;4  修改被调试程序运行时的变量值，将x的值改为4.<br>jump line 跳转到第line行执行。</p>
+</blockquote>
+<h2 id="如何使用gdb调试coredump文件？"><a href="#如何使用gdb调试coredump文件？" class="headerlink" title="如何使用gdb调试coredump文件？"></a>如何使用gdb调试coredump文件？</h2><ol>
+<li>coredump文件是核心转储文件。进程运行时，突然崩溃的那一瞬间，<strong>进程在内存中的一个快照，会把此刻内存，寄存器状态，运行堆栈等信息转储保存到一个文件里面</strong>。肯呢个产生，可能不产生。</li>
+<li>开启coredump：默认的coredump功能是关闭的，用ulimit -c 查看，如果输出为0，则表示异常终止的时候不会产生core dump文件。</li>
+<li>ulimit -c unlimited 开启coredump功能，但是这个功能是临时的。</li>
+<li>设置完成以后可以用ulimit -a 查看是否设置成功。</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-comment">#include &lt;iostream&gt;</span><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><br>int main()&#123;<br>    int* ptr = NULL;<br>    *ptr = <span class="hljs-number">100</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>产生core 文件以后：<br><img src="https://img-blog.csdnimg.cn/direct/7bbbf6a2e579498c95f4a8aed60e3dfc.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>使用core进行调试。</p>
+<p><code>程序崩溃产生不了core dump文件怎么办？</code><br>关注core file size大小，如果是0，需要设置一下，不然无法生成core dump文件。一般设置为unlimited。</p>
+<p><code>gdb exe core 的顺序去执行程序调试coredump文件</code><br><img src="https://img-blog.csdnimg.cn/direct/ec611bad36564e7588288735615e11b0.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>调试过程：</p>
+<ol>
+<li>查看调用堆栈，寻找崩溃原因。</li>
+<li>根据崩溃点，查找代码分析原因。</li>
+<li>修复bug。<br>这里因为代码比较简单，直接指出了错误的执行函数main函数，指针设置出现段错误。</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-comment">#include &lt;iostream&gt;</span><br><span class="hljs-comment">#include &lt;cstring&gt;</span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><br>void func(char* ptr)&#123;<br>    strcpy(ptr,<span class="hljs-string">&quot;test code ...&quot;</span>);<br>&#125;<br><br>int main()&#123;<br>    char* ptr = NULL;<br>    func(ptr);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>编译运行，产生coredump文件。<br><img src="https://img-blog.csdnimg.cn/direct/60bc34bd2c5f4507bc4ef808df58a1b7.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>查看到是func函数中的问题，ptr是一个空指针。</p>
+<h2 id="如何使用gdb调试多线程程序？"><a href="#如何使用gdb调试多线程程序？" class="headerlink" title="如何使用gdb调试多线程程序？"></a>如何使用gdb调试多线程程序？</h2><ol>
+<li>首先编写一个多线程简单测试样例。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;pthread.h&gt;</span></span><br><br><span class="hljs-keyword">using</span> std::cout;<br><span class="hljs-keyword">using</span> std::endl;<br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">thread_entry_funcA</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">500</span>;i++)&#123;<br>        cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcA]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>        <span class="hljs-built_in">sleep</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span>* <span class="hljs-title">thread_entry_funcB</span><span class="hljs-params">(<span class="hljs-type">void</span>* arg)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">500</span>;i++)&#123;<br>        cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcB]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>        <span class="hljs-built_in">sleep</span>(<span class="hljs-number">1</span>);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    <span class="hljs-type">pthread_t</span> tidA,tidB;<br>    <span class="hljs-type">int</span> ret = <span class="hljs-built_in">pthread_create</span>(&amp;tidA,<span class="hljs-literal">NULL</span>,thread_entry_funcA,<span class="hljs-literal">NULL</span>);<br>    <span class="hljs-keyword">if</span>(ret&lt;<span class="hljs-number">0</span>)&#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;pthread_create&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br><br>    ret = <span class="hljs-built_in">pthread_create</span>(&amp;tidB,<span class="hljs-literal">NULL</span>,thread_entry_funcB,<span class="hljs-literal">NULL</span>);<br>    <span class="hljs-keyword">if</span>(ret&lt;<span class="hljs-number">0</span>)&#123;<br>        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;pthread_create&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    &#125;<br><br>    <span class="hljs-built_in">pthread_join</span>(tidA,<span class="hljs-literal">NULL</span>);<br>    <span class="hljs-built_in">pthread_join</span>(tidB,<span class="hljs-literal">NULL</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>在运行的时候，打开另一个终端查看运行线程信息。</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs powershell">liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> <span class="hljs-built_in">ps</span> aux | grep main<br>liuchang   <span class="hljs-number">234</span>  <span class="hljs-number">0.1</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">952340</span> <span class="hljs-number">71772</span> pts/<span class="hljs-number">2</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">16</span>:<span class="hljs-number">49</span>   <span class="hljs-number">0</span>:<span class="hljs-number">03</span> /home/liuchang<br>liuchang  <span class="hljs-number">2162</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">98104</span>  <span class="hljs-number">1852</span> pts/<span class="hljs-number">6</span>    Tl   <span class="hljs-number">17</span>:<span class="hljs-number">30</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> ./main<br>liuchang  <span class="hljs-number">2225</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">98104</span>  <span class="hljs-number">1884</span> pts/<span class="hljs-number">6</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">17</span>:<span class="hljs-number">30</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> ./main<br>liuchang  <span class="hljs-number">4682</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">14904</span>  <span class="hljs-number">1096</span> pts/<span class="hljs-number">5</span>    S+   <span class="hljs-number">17</span>:<span class="hljs-number">37</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> grep <span class="hljs-literal">--color</span>=auto main<br>liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> pstack <span class="hljs-number">2162</span><br><br><span class="hljs-number">2162</span>: ./main<br>pstack: Input/output error<br>failed to read target.<br></code></pre></td></tr></table></figure>
+<p><code>pstack无法查看，命令无法使用，vim一个新的pstack文件出来，将下面代码拷贝进去，之后运行拷贝，sudo cp pstack /usr/bin，之后pstack就可以正常使用了。</code></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-comment">#!/bin/sh</span><br><br><span class="hljs-keyword">if</span> test <span class="hljs-variable">$</span><span class="hljs-comment"># -ne 1; then</span><br>    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Usage: `basename <span class="hljs-variable">$0</span> .sh` &lt;process-id&gt;&quot;</span> <span class="hljs-number">1</span>&gt;&amp;<span class="hljs-number">2</span><br>    <span class="hljs-keyword">exit</span> <span class="hljs-number">1</span><br>fi<br><br><span class="hljs-keyword">if</span> test ! <span class="hljs-literal">-r</span> /proc/<span class="hljs-variable">$1</span>; then<br>    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Process <span class="hljs-variable">$1</span> not found.&quot;</span> <span class="hljs-number">1</span>&gt;&amp;<span class="hljs-number">2</span><br>    <span class="hljs-keyword">exit</span> <span class="hljs-number">1</span><br>fi<br><br><span class="hljs-comment"># GDB doesn&#x27;t allow &quot;thread apply all bt&quot; when the process isn&#x27;t</span><br><span class="hljs-comment"># threaded; need to peek at the process to determine if that or the</span><br><span class="hljs-comment"># simpler &quot;bt&quot; should be used.</span><br><br>backtrace=<span class="hljs-string">&quot;bt&quot;</span><br><span class="hljs-keyword">if</span> test <span class="hljs-literal">-d</span> /proc/<span class="hljs-variable">$1</span>/task ; then<br>    <span class="hljs-comment"># Newer kernel; has a task/ directory.</span><br>    <span class="hljs-keyword">if</span> test `/bin/<span class="hljs-built_in">ls</span> /proc/<span class="hljs-variable">$1</span>/task | /usr/bin/wc <span class="hljs-literal">-l</span>` <span class="hljs-operator">-gt</span> <span class="hljs-number">1</span> <span class="hljs-number">2</span>&gt;/dev/null ; then<br>	backtrace=<span class="hljs-string">&quot;thread apply all bt&quot;</span><br>    fi<br>elif test <span class="hljs-operator">-f</span> /proc/<span class="hljs-variable">$1</span>/maps ; then<br>    <span class="hljs-comment"># Older kernel; go by it loading libpthread.</span><br>    <span class="hljs-keyword">if</span> /bin/grep <span class="hljs-literal">-e</span> libpthread /proc/<span class="hljs-variable">$1</span>/maps &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span> ; then<br>	backtrace=<span class="hljs-string">&quot;thread apply all bt&quot;</span><br>    fi<br>fi<br><br>GDB=<span class="hljs-variable">$</span>&#123;GDB:-/usr/bin/gdb&#125;<br><br><span class="hljs-keyword">if</span> <span class="hljs-variable">$GDB</span> <span class="hljs-literal">-nx</span> <span class="hljs-literal">--quiet</span> <span class="hljs-literal">--batch</span> <span class="hljs-literal">--readnever</span> &gt; /dev/null <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span>; then<br>    readnever=<span class="hljs-literal">--readnever</span><br><span class="hljs-keyword">else</span><br>    readnever=<br>fi<br><br><span class="hljs-comment"># Run GDB, strip out unwanted noise.</span><br><span class="hljs-variable">$GDB</span> <span class="hljs-literal">--quiet</span> <span class="hljs-variable">$readnever</span> <span class="hljs-literal">-nx</span> /proc/<span class="hljs-variable">$1</span>/exe <span class="hljs-variable">$1</span> &lt;&lt;EOF <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span> | <br><span class="hljs-built_in">set</span> width <span class="hljs-number">0</span><br><span class="hljs-built_in">set</span> height <span class="hljs-number">0</span><br><span class="hljs-built_in">set</span> pagination no<br><span class="hljs-variable">$backtrace</span><br>EOF<br>/bin/sed <span class="hljs-literal">-n</span> \<br>    <span class="hljs-literal">-e</span> <span class="hljs-string">&#x27;s/^\((gdb) \)*//&#x27;</span> \<br>    <span class="hljs-literal">-e</span> <span class="hljs-string">&#x27;/^#/p&#x27;</span> \<br>    <span class="hljs-literal">-e</span> <span class="hljs-string">&#x27;/^Thread/p&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs powershell">liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> <span class="hljs-built_in">ps</span> aux | grep main<br>liuchang   <span class="hljs-number">234</span>  <span class="hljs-number">0.1</span>  <span class="hljs-number">0.0</span> <span class="hljs-number">953252</span> <span class="hljs-number">73580</span> pts/<span class="hljs-number">2</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">16</span>:<span class="hljs-number">49</span>   <span class="hljs-number">0</span>:<span class="hljs-number">04</span> /home<br>liuchang  <span class="hljs-number">2162</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">98104</span>  <span class="hljs-number">1852</span> pts/<span class="hljs-number">6</span>    Tl   <span class="hljs-number">17</span>:<span class="hljs-number">30</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> ./main<br>liuchang  <span class="hljs-number">5255</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">98104</span>  <span class="hljs-number">1956</span> pts/<span class="hljs-number">6</span>    Tl   <span class="hljs-number">17</span>:<span class="hljs-number">39</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> ./main<br>liuchang  <span class="hljs-number">5892</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">98104</span>  <span class="hljs-number">1948</span> pts/<span class="hljs-number">6</span>    <span class="hljs-built_in">Sl</span>+  <span class="hljs-number">17</span>:<span class="hljs-number">47</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> ./main<br>liuchang  <span class="hljs-number">6055</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">0.0</span>  <span class="hljs-number">14904</span>  <span class="hljs-number">1088</span> pts/<span class="hljs-number">5</span>    S+   <span class="hljs-number">17</span>:<span class="hljs-number">47</span>   <span class="hljs-number">0</span>:<span class="hljs-number">00</span> grep <span class="hljs-literal">--color</span>=auto main<br><br>liuchang@DESKTOP<span class="hljs-literal">-LIUCHANG</span>:~/codetest<span class="hljs-variable">$</span> pstack <span class="hljs-number">5892</span><br>Thread <span class="hljs-number">3</span> (Thread <span class="hljs-number">0</span>x7fa009552700 (LWP <span class="hljs-number">5894</span>)):<br><span class="hljs-comment">#0  0x00007fa00a3ee680 in nanosleep () from /lib/x86_64-linux-gnu/libc.so.6</span><br><span class="hljs-comment">#1  0x0000559d9fe02020 in ?? ()</span><br><span class="hljs-comment">#2  0x00007fa00a80e65b in std::ostream::put(char) () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6</span><br><span class="hljs-comment">#3  0x0000000000000001 in ?? ()</span><br><span class="hljs-comment">#4  0xffffffffffffff60 in ?? ()</span><br><span class="hljs-comment">#5  0x0000000000000000 in ?? ()</span><br>Thread <span class="hljs-number">2</span> (Thread <span class="hljs-number">0</span>x7fa009d53700 (LWP <span class="hljs-number">5893</span>)):<br><span class="hljs-comment">#0  0x00007fa00a3ee680 in nanosleep () from /lib/x86_64-linux-gnu/libc.so.6</span><br><span class="hljs-comment">#1  0x0000559d9fe02020 in ?? ()</span><br><span class="hljs-comment">#2  0x00007fa00a80e65b in std::ostream::put(char) () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6</span><br><span class="hljs-comment">#3  0x0000000000000001 in ?? ()</span><br><span class="hljs-comment">#4  0xffffffffffffff60 in ?? ()</span><br><span class="hljs-comment">#5  0x0000000000000000 in ?? ()</span><br>Thread <span class="hljs-number">1</span> (Thread <span class="hljs-number">0</span>x7fa00aebd740 (LWP <span class="hljs-number">5892</span>)):<br><span class="hljs-comment">#0  0x00007fa00aa8cd2d in __pthread_timedjoin_ex () from /lib/x86_64-linux-gnu/libpthread.so.0 #主线程pthreadjoin</span><br><span class="hljs-comment">#1  0x0000000000001000 in ?? ()</span><br><span class="hljs-comment">#2  0x0000000000000000 in ?? ()</span><br></code></pre></td></tr></table></figure>
+
+
+<p><code>多线程程序的调试：查看线程信息，切换线程，切换到某一层堆栈</code></p>
+<ul>
+<li>gdb打上断点，并且执行之后，info threads查看线程信息。</li>
+<li>t 加线程id，切换线程。</li>
+<li>bt 查看堆栈</li>
+<li>f 加堆栈编号，切换到具体堆栈。</li>
+<li>p 查看想查看的变量信息</li>
+<li>n 不仅使当前线程执行一步，其他线程也会执行一部分。(怎么让线程A执行的时候，线程B不要执行？调度器锁)</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs powershell">(gdb) info threads<br>  Id   Target Id         Frame <br>  <span class="hljs-number">1</span>    Thread <span class="hljs-number">0</span>x7ffff7fe8740 (LWP <span class="hljs-number">27863</span>) <span class="hljs-string">&quot;main&quot;</span> clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:<span class="hljs-number">78</span><br>* <span class="hljs-number">2</span>    Thread <span class="hljs-number">0</span>x7ffff6e83700 (LWP <span class="hljs-number">27867</span>) <span class="hljs-string">&quot;main&quot;</span> thread_entry_funcA (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">12</span><br>  <span class="hljs-number">3</span>    Thread <span class="hljs-number">0</span>x7ffff6682700 (LWP <span class="hljs-number">27868</span>) <span class="hljs-string">&quot;main&quot;</span> clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:<span class="hljs-number">78</span><br>(gdb) t <span class="hljs-number">1</span><br>[<span class="hljs-type">Switching</span> <span class="hljs-type">to</span> <span class="hljs-type">thread</span> <span class="hljs-number">1</span> (<span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff7fe8740</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">27863</span>))]<br><span class="hljs-comment">#0  clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:78</span><br><span class="hljs-number">78</span>      ../sysdeps/unix/sysv/linux/x86_64/clone.S: No such file or directory.<br>(gdb) t <span class="hljs-number">2</span>t<br>Invalid thread ID: <span class="hljs-number">2</span>t<br>(gdb) t <span class="hljs-number">2</span>t<span class="hljs-string">&#x27;</span><br><span class="hljs-string">Invalid thread ID: 2t&#x27;</span><br>(gdb) t <span class="hljs-number">2</span><br>[<span class="hljs-type">Switching</span> <span class="hljs-type">to</span> <span class="hljs-type">thread</span> <span class="hljs-number">2</span> (<span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6e83700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">27867</span>))]<br><span class="hljs-comment">#0  thread_entry_funcA (arg=0x0) at main.cpp:12</span><br><span class="hljs-number">12</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcA]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>(gdb) bt<br><span class="hljs-comment">#0  thread_entry_funcA (arg=0x0) at main.cpp:12</span><br><span class="hljs-comment">#1  0x00007ffff7bbb6db in start_thread (arg=0x7ffff6e83700) at pthread_create.c:463</span><br><span class="hljs-comment">#2  0x00007ffff755b61f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95</span><br>(gdb) f <span class="hljs-number">0</span><br><span class="hljs-comment">#0  thread_entry_funcA (arg=0x0) at main.cpp:12</span><br><span class="hljs-number">12</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcA]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>(gdb) p i<br><span class="hljs-variable">$1</span> = <span class="hljs-number">0</span><br>(gdb) n<br>[<span class="hljs-type">Switching</span> <span class="hljs-type">to</span> <span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6682700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">27868</span>)]<br><br>Thread <span class="hljs-number">3</span> <span class="hljs-string">&quot;main&quot;</span> hit Breakpoint <span class="hljs-number">2</span>, thread_entry_funcB (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">20</span><br><span class="hljs-number">20</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcB]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>(gdb) info threads<br>  Id   Target Id         Frame <br>  <span class="hljs-number">1</span>    Thread <span class="hljs-number">0</span>x7ffff7fe8740 (LWP <span class="hljs-number">27863</span>) <span class="hljs-string">&quot;main&quot;</span> <span class="hljs-number">0</span>x00007ffff7bbcd2d <span class="hljs-keyword">in</span> __GI___pthread_timedjoin_ex (threadid=<span class="hljs-number">140737335801600</span>, thread_return=<span class="hljs-number">0</span>x0, abstime=<span class="hljs-number">0</span>x0, block=&lt;optimized out&gt;) at pthread_join_common.c:<span class="hljs-number">89</span><br>  <span class="hljs-number">2</span>    Thread <span class="hljs-number">0</span>x7ffff6e83700 (LWP <span class="hljs-number">27867</span>) <span class="hljs-string">&quot;main&quot;</span> <span class="hljs-number">0</span>x0000555555400b04 <span class="hljs-keyword">in</span> thread_entry_funcA (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">12</span><br>* <span class="hljs-number">3</span>    Thread <span class="hljs-number">0</span>x7ffff6682700 (LWP <span class="hljs-number">27868</span>) <span class="hljs-string">&quot;main&quot;</span> thread_entry_funcB (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+
+<p><code>调度器锁模式：只有线程创建之后的暂停效果才有效</code></p>
+<blockquote>
+<p>调试时除了当前线程在运行，想要规定其他线程的运行情况，可以使用set scheduler-locking [mode] 命令来进行设置。</p>
+<ol>
+<li>set scheduler-locking  off：不锁定任何线程，所有线程都可以继续执行。</li>
+<li>set scheduler-locking on：只有当前线程可以执行，其他线程暂停。</li>
+<li>set scheduler-locking step：<br> *  当单步执行某一线程时，其它线程不会执行，同时保证在调试过程中当前线程不会发生改变。但如果该模式下执行 continue、until、finish 命令，则其它线程也会执行，并且如果某一线程执行过程遇到断点，则 GDB 调试器会将该线程作为当前线程。<code>centos好像是可以执行的，但是ubuntu不会执行</code><br> * 但如果在该模式下执行continue，until，finish命令，其他线程也会执行，并且如果某一线程执行过程中遇到断点，则GDB调试器会将该线程作为当前线程。</li>
+</ol>
+</blockquote>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs powershell">(gdb) b <span class="hljs-number">12</span><br>Breakpoint <span class="hljs-number">1</span> at <span class="hljs-number">0</span>xaf6: file main.cpp, line <span class="hljs-number">12</span>.<br>(gdb) b <span class="hljs-number">20</span><br>Breakpoint <span class="hljs-number">2</span> at <span class="hljs-number">0</span>xb61: file main.cpp, line <span class="hljs-number">20</span>.<br>(gdb) info b<br>Num     <span class="hljs-built_in">Type</span>           Disp Enb Address            What<br><span class="hljs-number">1</span>       breakpoint     keep y   <span class="hljs-number">0</span>x0000000000000af6 <span class="hljs-keyword">in</span> thread_entry_funcA(void*) at main.cpp:<span class="hljs-number">12</span><br><span class="hljs-number">2</span>       breakpoint     keep y   <span class="hljs-number">0</span>x0000000000000b61 <span class="hljs-keyword">in</span> thread_entry_funcB(void*) at main.cpp:<span class="hljs-number">20</span><br>(gdb) <span class="hljs-built_in">r</span><br>Starting program: /home/liuchang/codetest/main <br>[<span class="hljs-type">Thread</span> <span class="hljs-type">debugging</span> <span class="hljs-type">using</span> <span class="hljs-type">libthread_db</span> <span class="hljs-type">enabled</span>]<br><span class="hljs-keyword">Using</span> host libthread_db library <span class="hljs-string">&quot;/lib/x86_64-linux-gnu/libthread_db.so.1&quot;</span>.<br>[<span class="hljs-type">New</span> <span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6e83700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">835</span>)]<br>[<span class="hljs-type">New</span> <span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6682700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">836</span>)]<br>[<span class="hljs-type">Switching</span> <span class="hljs-type">to</span> <span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6e83700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">835</span>)]<br><br>Thread <span class="hljs-number">2</span> <span class="hljs-string">&quot;main&quot;</span> hit Breakpoint <span class="hljs-number">1</span>, thread_entry_funcA (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">12</span><br><span class="hljs-number">12</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcA]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>(gdb) info threads<br>  Id   Target Id         Frame <br>  <span class="hljs-number">1</span>    Thread <span class="hljs-number">0</span>x7ffff7fe8740 (LWP <span class="hljs-number">831</span>) <span class="hljs-string">&quot;main&quot;</span> clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:<span class="hljs-number">78</span><br>* <span class="hljs-number">2</span>    Thread <span class="hljs-number">0</span>x7ffff6e83700 (LWP <span class="hljs-number">835</span>) <span class="hljs-string">&quot;main&quot;</span> thread_entry_funcA (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">12</span><br>  <span class="hljs-number">3</span>    Thread <span class="hljs-number">0</span>x7ffff6682700 (LWP <span class="hljs-number">836</span>) <span class="hljs-string">&quot;main&quot;</span> thread_entry_funcB (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">20</span><br>(gdb) bt<br><span class="hljs-comment">#0  thread_entry_funcA (arg=0x0) at main.cpp:12</span><br><span class="hljs-comment">#1  0x00007ffff7bbb6db in start_thread (arg=0x7ffff6e83700) at pthread_create.c:463</span><br><span class="hljs-comment">#2  0x00007ffff755b61f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95</span><br>(gdb) f <span class="hljs-number">0</span><br><span class="hljs-comment">#0  thread_entry_funcA (arg=0x0) at main.cpp:12</span><br><span class="hljs-number">12</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcA]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br>(gdb) n  <span class="hljs-comment">#想要执行线程A，但是发现线程切换到了线程B</span><br>[<span class="hljs-type">Switching</span> <span class="hljs-type">to</span> <span class="hljs-type">Thread</span> <span class="hljs-number">0</span><span class="hljs-type">x7ffff6682700</span> (<span class="hljs-type">LWP</span> <span class="hljs-number">836</span>)]<br><br>Thread <span class="hljs-number">3</span> <span class="hljs-string">&quot;main&quot;</span> hit Breakpoint <span class="hljs-number">2</span>, thread_entry_funcB (arg=<span class="hljs-number">0</span>x0) at main.cpp:<span class="hljs-number">20</span><br><span class="hljs-number">20</span>              cout&lt;&lt;<span class="hljs-string">&quot;[thread_entry_funcB]: &quot;</span>&lt;&lt;i&lt;&lt;endl;<br></code></pre></td></tr></table></figure>
+
+<p>参考列表：<br><a target="_blank" rel="noopener" href="https://haoel.blog.csdn.net/article/details/2879">https://haoel.blog.csdn.net/article/details/2879</a><br><a target="_blank" rel="noopener" href="https://subingwen.cn/linux/gdb/">https://subingwen.cn/linux/gdb/</a><br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1mp4y1A7Ss">https://www.bilibili.com/video/BV1mp4y1A7Ss</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010164190/article/details/111059283">https://blog.csdn.net/u010164190/article/details/111059283</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Linux/" class="category-chain-item">Linux</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/Linux/" class="print-no-link">#Linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux学习四(GDB)</div>
+      <div>https://cauccliu.github.io/2024/03/26/Linux学习四(GDB)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/26/STL%E6%B3%9B%E5%9E%8B%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0/" title="STL 泛型编程学习">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">STL 泛型编程学习</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/Linux%E5%AD%A6%E4%B9%A0%E4%B8%89(Makefile)/" title="Linux学习三(Makefile)">
+                        <span class="hidden-mobile">Linux学习三(Makefile)</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

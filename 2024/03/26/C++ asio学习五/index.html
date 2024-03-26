@@ -1,0 +1,716 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="C++ asio学习五网络结构的更新 asio网络层，会使用io_context进行数据封装，底层的话，在linux中就是epoll模型，在windows就是iocp模型。 当服务器的接受数据较多时，又要处理接收到的信息的逻辑处理，逻辑处理一般会放到一个逻辑处理队列中进行处理。因为有时候逻辑比较复杂。 通过一个队列，单独线程从队列中取出逻辑函数。从而实现网络线程和逻辑线程分开，由一个队列进行连接。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ asio学习五">
+<meta property="og:url" content="https://cauccliu.github.io/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E4%BA%94/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="C++ asio学习五网络结构的更新 asio网络层，会使用io_context进行数据封装，底层的话，在linux中就是epoll模型，在windows就是iocp模型。 当服务器的接受数据较多时，又要处理接收到的信息的逻辑处理，逻辑处理一般会放到一个逻辑处理队列中进行处理。因为有时候逻辑比较复杂。 通过一个队列，单独线程从队列中取出逻辑函数。从而实现网络线程和逻辑线程分开，由一个队列进行连接。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/d41785b62065439faf9c6faa5befbd08.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/d5f2e6a09b064ead9cd251faf8785610.png">
+<meta property="article:published_time" content="2024-03-26T13:18:06.850Z">
+<meta property="article:modified_time" content="2024-03-26T13:18:48.102Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/d41785b62065439faf9c6faa5befbd08.png">
+  
+  
+  
+  <title>C++ asio学习五 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="C++ asio学习五"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-26 21:18" pubdate>
+          March 26, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.8k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          24 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">C++ asio学习五</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="C-asio学习五"><a href="#C-asio学习五" class="headerlink" title="C++ asio学习五"></a>C++ asio学习五</h1><h2 id="网络结构的更新"><a href="#网络结构的更新" class="headerlink" title="网络结构的更新"></a>网络结构的更新</h2><ol>
+<li>asio网络层，会使用io_context进行数据封装，底层的话，<code>在linux中就是epoll模型，在windows就是iocp模型。</code><br><img src="https://img-blog.csdnimg.cn/direct/d41785b62065439faf9c6faa5befbd08.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>当服务器的接受数据较多时，又要处理接收到的信息的逻辑处理，逻辑处理一般会放到一个<code>逻辑处理队列中进行处理。</code>因为有时候逻辑比较复杂。</li>
+<li>通过一个队列，单独线程从队列中取出逻辑函数。从而实现网络线程和逻辑线程分开，由一个队列进行连接。极大地提升网络线程的收发能力，并且可以用多线程的方式管理网络层。</li>
+<li>asio的多线程模式：<ul>
+<li>启动n个线程，每个线程都有一个iocontext，每个线程负责一部分的socket。</li>
+<li>一个ioconext由多个线程共享。也可以一定程度上减轻readhandler的负担。</li>
+</ul>
+</li>
+<li>逻辑处理一般都是单线程的，因为大量的用户同时处理一个逻辑过程的时候，频繁地加锁取消锁，还不如就单线程的来做。</li>
+</ol>
+<p>完善消息结构：<br>消息 &#x3D; 消息id + 消息长度 + 消息内容。 <strong>前两部分统一封装到消息头里</strong>，tlv格式。消息id占2个字节，消息长度占2个字节，消息头共4个字节。</p>
+<p>更新消息节点：<code>将收取消息的类和发送消息的类，继承自消息基类。</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//HEAD_TOTAL_LEN = 4 包含id 和 消息长度。</span><br>SendNode::<span class="hljs-built_in">SendNode</span>(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* msg, <span class="hljs-type">short</span> max_len, <span class="hljs-type">short</span> msg_id):<span class="hljs-built_in">MsgNode</span>(max_len + HEAD_TOTAL_LEN)<br>, _msg_id(msg_id)&#123;<br>    <span class="hljs-comment">//先发送id, 本机字节序转为网络字节序</span><br>    <span class="hljs-type">short</span> msg_id_host = boost::asio::detail::socket_ops::<span class="hljs-built_in">host_to_network_short</span>(msg_id);<br>    <span class="hljs-built_in">memcpy</span>(_data, &amp;msg_id_host, HEAD_ID_LEN); <span class="hljs-comment">// 变量按照字节流的方式，写到_data的前两个字节。</span><br>    <span class="hljs-comment">//消息长度和消息体本身  转为网络字节序</span><br>    <span class="hljs-type">short</span> max_len_host = boost::asio::detail::socket_ops::<span class="hljs-built_in">host_to_network_short</span>(max_len);<br>    <span class="hljs-comment">// 消息体长度信息的拷贝。</span><br>    <span class="hljs-built_in">memcpy</span>(_data + HEAD_ID_LEN, &amp;max_len_host, HEAD_DATA_LEN);<br>    <span class="hljs-comment">// 消息体本身的拷贝。</span><br>    <span class="hljs-built_in">memcpy</span>(_data + HEAD_ID_LEN + HEAD_DATA_LEN, msg, max_len);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><h3 id="懒汉单例模式"><a href="#懒汉单例模式" class="headerlink" title="懒汉单例模式"></a>懒汉单例模式</h3><ol>
+<li>通过静态成员变量实现单例。<code>存在隐患，对于多线程方式生成的实例可能是多个。</code></li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Single2</span> &#123;<br><span class="hljs-keyword">private</span>:<br>	<span class="hljs-built_in">Single2</span>() &#123;&#125;<br>	<span class="hljs-built_in">Single2</span>(<span class="hljs-type">const</span> Single2&amp;) = <span class="hljs-keyword">delete</span>;<br>	Single2&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Single2&amp;) = <span class="hljs-keyword">delete</span>;<br><span class="hljs-keyword">public</span>:<br>	<span class="hljs-comment">// 静态局部变量实现单例</span><br>	<span class="hljs-function"><span class="hljs-type">static</span> Single2&amp; <span class="hljs-title">GetInst</span><span class="hljs-params">()</span> </span>&#123;<br>		<span class="hljs-type">static</span> Single2 single; <span class="hljs-comment">// 生命周期和进程一样，函数的局部静态变量生命周期随着进程结束而结束。</span><br>		<span class="hljs-keyword">return</span> single;<br>	&#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="饿汉单例模式"><a href="#饿汉单例模式" class="headerlink" title="饿汉单例模式"></a>饿汉单例模式</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Single2Hungry</span><br>&#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">Single2Hungry</span>()<br>    &#123;<br>    &#125;<br>    <span class="hljs-built_in">Single2Hungry</span>(<span class="hljs-type">const</span> Single2Hungry &amp;) = <span class="hljs-keyword">delete</span>;<br>    Single2Hungry &amp;<span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> Single2Hungry &amp;) = <span class="hljs-keyword">delete</span>;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">static</span> Single2Hungry *<span class="hljs-title">GetInst</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">if</span> (single == <span class="hljs-literal">nullptr</span>)<br>        &#123;<br>            single = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Single2Hungry</span>();<br>        &#125;<br>        <span class="hljs-keyword">return</span> single;<br>    &#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">static</span> Single2Hungry *single;<br>&#125;;<br><span class="hljs-comment">// 初始化</span><br>Single2Hungry *Single2Hungry::single = Single2Hungry::<span class="hljs-built_in">GetInst</span>();<br><br></code></pre></td></tr></table></figure>
+<p>饿汉式是在程序启动时就进行单例的初始化，这种方式也可以通过懒汉式调用，无论饿汉式还是懒汉式都存在一个问题，就是什么时候释放内存？多线程情况下，释放内存就很难了，还有二次释放内存的风险。</p>
+<h3 id="懒汉式指针"><a href="#懒汉式指针" class="headerlink" title="懒汉式指针"></a>懒汉式指针</h3><p>单例模式的单例由指针存在，创建单例的时候，用加锁的方式进行判断。防止在加锁的过程中，出现单例类被创建的情况。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">SinglePointer</span><br>&#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">SinglePointer</span>()<br>    &#123;<br>    &#125;<br>    <span class="hljs-built_in">SinglePointer</span>(<span class="hljs-type">const</span> SinglePointer &amp;) = <span class="hljs-keyword">delete</span>;<br>    SinglePointer &amp;<span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> SinglePointer &amp;) = <span class="hljs-keyword">delete</span>;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-function"><span class="hljs-type">static</span> SinglePointer *<span class="hljs-title">GetInst</span><span class="hljs-params">()</span></span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">if</span> (single != <span class="hljs-literal">nullptr</span>)<br>        &#123;<br>            <span class="hljs-keyword">return</span> single;<br>        &#125;<br>        s_mutex.<span class="hljs-built_in">lock</span>();<br>        <span class="hljs-keyword">if</span> (single != <span class="hljs-literal">nullptr</span>)<br>        &#123;<br>            s_mutex.<span class="hljs-built_in">unlock</span>();<br>            <span class="hljs-keyword">return</span> single;<br>        &#125;<br>        single = <span class="hljs-keyword">new</span> <span class="hljs-built_in">SinglePointer</span>();<br>        s_mutex.<span class="hljs-built_in">unlock</span>();<br>        <span class="hljs-keyword">return</span> single;<br>    &#125;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">static</span> SinglePointer *single;<br>    <span class="hljs-type">static</span> mutex s_mutex;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h3 id="智能指针设计单例类"><a href="#智能指针设计单例类" class="headerlink" title="智能指针设计单例类"></a>智能指针设计单例类</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">SingleAuto</span><br>&#123;<br><span class="hljs-keyword">private</span>:<br>	<span class="hljs-built_in">SingleAuto</span>()<br>	&#123;<br>	&#125;<br>	<span class="hljs-built_in">SingleAuto</span>(<span class="hljs-type">const</span> SingleAuto&amp;) = <span class="hljs-keyword">delete</span>;<br>	SingleAuto&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> SingleAuto&amp;) = <span class="hljs-keyword">delete</span>;<br><span class="hljs-keyword">public</span>:<br>	~<span class="hljs-built_in">SingleAuto</span>()<br>	&#123;<br>		cout &lt;&lt; <span class="hljs-string">&quot;single auto delete success &quot;</span> &lt;&lt; endl;<br>	&#125;<br>	<span class="hljs-function"><span class="hljs-type">static</span> std::shared_ptr&lt;SingleAuto&gt; <span class="hljs-title">GetInst</span><span class="hljs-params">()</span></span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">if</span> (single != <span class="hljs-literal">nullptr</span>)<br>		&#123;<br>			<span class="hljs-keyword">return</span> single;<br>		&#125;<br>		s_mutex.<span class="hljs-built_in">lock</span>();<br>		<span class="hljs-keyword">if</span> (single != <span class="hljs-literal">nullptr</span>)<br>		&#123;<br>			s_mutex.<span class="hljs-built_in">unlock</span>();<br>			<span class="hljs-keyword">return</span> single;<br>		&#125;<br>		single = std::<span class="hljs-built_in">shared_ptr</span>&lt;SingleAuto&gt;(<span class="hljs-keyword">new</span> SingleAuto);<br>		s_mutex.<span class="hljs-built_in">unlock</span>();<br>		<span class="hljs-keyword">return</span> single;<br>	&#125;<br><span class="hljs-keyword">private</span>:<br>	<span class="hljs-type">static</span> std::shared_ptr&lt;SingleAuto&gt; single;<br>	<span class="hljs-type">static</span> mutex s_mutex;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="服务器优雅退出"><a href="#服务器优雅退出" class="headerlink" title="服务器优雅退出"></a>服务器优雅退出</h2><ul>
+<li>服务器退出之前，要把服务器逻辑队列中的服务执行完成。</li>
+<li>asio提供的信号建立的方式，<code>利用signal_set 定义了一系列信号合集，并且绑定了一个匿名函数，匿名函数捕获了io_context的引用</code>，并且函数中设置了停止操作，也就是说当<code>捕获到SIGINT,SIGTERM等信号时，会调用io_context.stop</code>。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">try</span> &#123;<br>        boost::asio::io_context  io_context;<br>        <span class="hljs-comment">// 绑定信号 想捕获的信号，都加进去就行了 捕获io_context的收到的信号</span><br>        boost::<span class="hljs-function">asio::signal_set <span class="hljs-title">signals</span><span class="hljs-params">(io_context, SIGINT, SIGTERM)</span></span>;<br>        <span class="hljs-comment">// 异步等待方式，等待停止信号</span><br>        <span class="hljs-comment">// 绑定了一个匿名函数，匿名函数捕获了io_context的引用，并且函数中设置了停止操作，也就是说当捕获到SIGINT,SIGTERM等信号时，会调用io_context.stop</span><br>        signals.<span class="hljs-built_in">async_wait</span>([&amp;io_context](<span class="hljs-keyword">auto</span>, <span class="hljs-keyword">auto</span>) &#123;<br>            io_context.<span class="hljs-built_in">stop</span>();<br>            &#125;);<br>        <span class="hljs-function">CServer <span class="hljs-title">s</span><span class="hljs-params">(io_context, <span class="hljs-number">10086</span>)</span></span>;<br>        io_context.<span class="hljs-built_in">run</span>();<br>    &#125;<br>    <span class="hljs-built_in">catch</span> (std::exception&amp; e) &#123;<br>        std::cerr &lt;&lt; <span class="hljs-string">&quot;Exception: &quot;</span> &lt;&lt; e.<span class="hljs-built_in">what</span>() &lt;&lt; endl;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="asio的多线程模型IOService"><a href="#asio的多线程模型IOService" class="headerlink" title="asio的多线程模型IOService"></a>asio的多线程模型IOService</h2><ol>
+<li><p>第一个是启动多个线程，每个线程管理一个iocontext。第二种是只启动一个iocontext，被多个线程共享。<br><img src="https://img-blog.csdnimg.cn/direct/d5f2e6a09b064ead9cd251faf8785610.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+</li>
+<li><p>启动线程的个数，不要超过核数。</p>
+</li>
+<li><p><code>每个线程独立调用io_context，一个socket会被注册在同一个io_context里</code>，它的回调函数也会被单独的一个线程回调:</p>
+<ul>
+<li>那么对于同一个socket，他的回调函数每次触发都是在同一个线程里，<code>就不会有线程安全问题，网络io层面上的并发是线程安全的。</code></li>
+<li>如果两个socket对应的上层逻辑处理，如果有交互或者访问共享区，会存在线程安全问题。可以通过<code>加锁</code>或者<code>逻辑队列</code>的方式解决安全问题。</li>
+</ul>
+</li>
+<li><p><strong>多线程的优势：提升了并发能力</strong>， 单线程仅有一个io_context服务用来监听读写事件，就绪后回调函数在一个线程里串行调用。如果一个回调函数的调用时间较长肯定会影响后续的函数调用。</p>
+</li>
+<li><p><code>通过逻辑队列的方式将网络线程和逻辑线程解耦合，不会出现前一个调用时间影响下一个回调触发的问题。</code></p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AsioIOServicePool</span> :<span class="hljs-keyword">public</span> Singleton&lt;AsioIOServicePool&gt;<br>&#123;<br>    <span class="hljs-keyword">friend</span> Singleton&lt;AsioIOServicePool&gt;; <span class="hljs-comment">//声明友元，用这个类访问构造函数</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">using</span> IOService = boost::asio::io_context; <span class="hljs-comment">// 定义别名</span><br>    <span class="hljs-comment">// 通常会将一些异步操作提交给io_context进行处理，然后该操作会被异步执行，而不会立即返回结果。</span><br>    <span class="hljs-comment">// 如果没有其他任务需要执行，那么io_context就会停止工作，导致所有正在进行的异步操作都被取消。</span><br>    <span class="hljs-comment">// 这时，我们需要使用boost::asio::io_context::work对象来防止io_context停止工作。</span><br>    <span class="hljs-keyword">using</span> Work = boost::asio::io_context::work; <span class="hljs-comment">// work，防止io_context在没有被注册事件的时候退出。</span><br>    <span class="hljs-keyword">using</span> WorkPtr = std::unique_ptr&lt;Work&gt;; <span class="hljs-comment">//work不被改变。</span><br><br>    ~<span class="hljs-built_in">AsioIOServicePool</span>();<br>    <span class="hljs-built_in">AsioIOServicePool</span>(<span class="hljs-type">const</span> AsioIOServicePool&amp;) = <span class="hljs-keyword">delete</span>;<span class="hljs-comment">//不加引用的话，会造成一个递归构造的危险，不允许拷贝构造</span><br>    AsioIOServicePool&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> AsioIOServicePool&amp;) = <span class="hljs-keyword">delete</span>;<br>    <span class="hljs-comment">// 使用 round-robin 的方式返回一个 io_service</span><br>    boost::<span class="hljs-function">asio::io_context&amp; <span class="hljs-title">GetIOService</span><span class="hljs-params">()</span></span>;<span class="hljs-comment">// 轮询的方式</span><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Stop</span><span class="hljs-params">()</span></span>;<span class="hljs-comment">// 停止ioservice</span><br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-comment">// 不让外界直接调用</span><br>    <span class="hljs-built_in">AsioIOServicePool</span>(std::<span class="hljs-type">size_t</span> size = std::thread::<span class="hljs-built_in">hardware_concurrency</span>()); <span class="hljs-comment">//根据CPU核数去创建线程数量</span><br>    std::vector&lt;IOService&gt; _ioServices; <span class="hljs-comment">//IOService的vector变量，用来存储初始化的多个IOService。</span><br>    std::vector&lt;WorkPtr&gt; _works;<br>    std::vector&lt;std::thread&gt; _threads;<br>    std::<span class="hljs-type">size_t</span>   _nextIOService;<span class="hljs-comment">//下标</span><br>&#125;;<br><br><span class="hljs-comment">// 构造函数，初始化size个ioservice，size个_works, _ioServices绑定到works</span><br><span class="hljs-comment">// _ioServices放到不同的线程中。</span><br>AsioIOServicePool::<span class="hljs-built_in">AsioIOServicePool</span>(std::<span class="hljs-type">size_t</span> size) :_ioServices(size),<br>_works(size), _nextIOService(<span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-keyword">for</span> (std::<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; size; ++i) &#123;<br>        _works[i] = std::<span class="hljs-built_in">unique_ptr</span>&lt;Work&gt;(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Work</span>(_ioServices[i]));<br>    &#125;<br>    <span class="hljs-comment">//遍历多个ioservice，创建多个线程，每个线程内部启动ioservice</span><br>    <span class="hljs-keyword">for</span> (std::<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; _ioServices.<span class="hljs-built_in">size</span>(); ++i) &#123;<br>        _threads.<span class="hljs-built_in">emplace_back</span>([<span class="hljs-keyword">this</span>, i]() &#123;<br>            _ioServices[i].<span class="hljs-built_in">run</span>();<span class="hljs-comment">// 如果不绑定work，run()就会直接返回了</span><br>            &#125;);<br>    &#125;<br>&#125;<br><br>AsioIOServicePool::~<span class="hljs-built_in">AsioIOServicePool</span>() &#123;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;destruct&quot;</span> &lt;&lt; std::endl;<br>&#125;<br><br><span class="hljs-comment">// 轮询的方式，每次取出来的ioservice都不同。</span><br>boost::<span class="hljs-function">asio::io_context&amp; <span class="hljs-title">AsioIOServicePool::GetIOService</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">auto</span>&amp; service = _ioServices[_nextIOService++]; <span class="hljs-comment">//取出service</span><br>    <span class="hljs-keyword">if</span> (_nextIOService == _ioServices.<span class="hljs-built_in">size</span>()) &#123;<br>        _nextIOService = <span class="hljs-number">0</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> service;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">AsioIOServicePool::Stop</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; work : _works) &#123;<br>        work.<span class="hljs-built_in">reset</span>();<span class="hljs-comment">// 想要Service停掉，要先work.reset();</span><br>        <span class="hljs-comment">// work.reset()是让unique指针置空并释放，那么work的析构函数就会被调用，work被析构，其管理的io_service在没有事件监听时就会被释放。</span><br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; t : _threads) &#123;<br>        t.<span class="hljs-built_in">join</span>();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="asio多线程IOThreadPool"><a href="#asio多线程IOThreadPool" class="headerlink" title="asio多线程IOThreadPool"></a>asio多线程IOThreadPool</h2><ol>
+<li><code>一个IOServicePool开启n个线程和n个iocontext，每个线程内独立运行iocontext, 各个iocontext监听各自绑定的socket是否就绪，如果就绪就在各自线程里触发回调函数。</code></li>
+<li>IOThreadPool：<code>初始化一个iocontext用来监听服务器的读写事件，包括新连接到来的监听也用这个iocontext。只是我们让iocontext.run在多个线程中调用</code>，这样回调函数就会被不同的线程触发，从这个角度看回调函数被并发调用了。</li>
+<li>线程池统一管理一个io_context，每个线程调用一个io_context，会话session都注册到一个，哪个线程调用了io_context.run，哪个线程去就绪队列取出回调函数。</li>
+<li>回调函数对同一个session来说就是不安全的。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">AsioThreadPool</span> :<span class="hljs-keyword">public</span> Singleton&lt;AsioThreadPool&gt;<br>&#123;<br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">friend</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Singleton</span>&lt;AsioThreadPool&gt;;<br>    ~<span class="hljs-built_in">AsioThreadPool</span>() &#123;&#125;<br>    AsioThreadPool&amp; <span class="hljs-keyword">operator</span>=(<span class="hljs-type">const</span> AsioThreadPool&amp;) = <span class="hljs-keyword">delete</span>;<br>    <span class="hljs-built_in">AsioThreadPool</span>(<span class="hljs-type">const</span> AsioThreadPool&amp;) = <span class="hljs-keyword">delete</span>;<br>    boost::<span class="hljs-function">asio::io_context&amp; <span class="hljs-title">GetIOService</span><span class="hljs-params">()</span></span>;<br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Stop</span><span class="hljs-params">()</span></span>;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-built_in">AsioThreadPool</span>(<span class="hljs-type">int</span> threadNum = std::thread::<span class="hljs-built_in">hardware_concurrency</span>());<br>    boost::asio::io_context _service;<br>    std::unique_ptr&lt;boost::asio::io_context::work&gt; _work; <span class="hljs-comment">//没有客人来，我也不会让饭店关门</span><br>    std::vector&lt;std::thread&gt; _threads;<br>&#125;;<br><br><span class="hljs-comment">// 初始化列表进行初始化</span><br>AsioThreadPool::<span class="hljs-built_in">AsioThreadPool</span>(<span class="hljs-type">int</span> threadNum) :_work(<span class="hljs-keyword">new</span> boost::asio::io_context::<span class="hljs-built_in">work</span>(_service)) &#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; threadNum; ++i) &#123;<br>        _threads.<span class="hljs-built_in">emplace_back</span>([<span class="hljs-keyword">this</span>]() &#123;<br>            _service.<span class="hljs-built_in">run</span>();<br>            &#125;);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>线程池里每个线程都会运行_service.run函数</code>，这就是多线程调用一个io_context的逻辑。</li>
+<li>因为回调函数是在不同的线程里调用的，所以会存在不同的线程调用同一个socket的回调函数的情况。</li>
+<li><code>_service.run 内部在Linux环境下调用的是epoll_wait返回所有就绪的描述符列表</code>，<code>在windows上会循环调用GetQueuedCompletionStatus函数返回就绪的描述符</code>，二者原理类似，进而通过描述符找到对应的注册的回调函数，然后调用回调函数。</li>
+</ul>
+<h3 id="epoll-和-iocp的一些知识点"><a href="#epoll-和-iocp的一些知识点" class="headerlink" title="epoll 和 iocp的一些知识点"></a>epoll 和 iocp的一些知识点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">IOCP的使用主要分为以下几步：<br>1 创建完成端口(iocp)对象。<br>2 创建一个或多个工作线程，在完成端口上执行并处理投递到完成端口上的I/O请求。<br>3 Socket关联iocp对象，在Socket上投递网络事件。<br>4 工作线程调用GetQueuedCompletionStatus函数获取完成通知封包，取得事件信息并进行处理。<br><br>epoll_wait的工作方式：<br>1 调用epoll_creat在内核中创建一张epoll表。<br>2 开辟一片包含n个epoll_event大小的连续空间。<br>3 将要监听的socket注册到epoll表里。<br>4 调用epoll_wait，传入之前我们开辟的连续空间，epoll_wait返回就绪的epoll_event列表，<br>epoll会将就绪的socket信息写入我们之前开辟的连续空间。<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>使用这种方式，有可能会存在隐患，不同的线程有可能处理同一块Read回调处理函数，存在网络上的并行。<br><code>改进方法：再添加一个strand管理的队列，asio的strand是一个安全队列，里面进行独立的单线程访问。</code></li>
+<li>回调处理放在_strand中进行执行。<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CSession::Start</span><span class="hljs-params">()</span></span>&#123;<br>    ::<span class="hljs-built_in">memset</span>(_data, <span class="hljs-number">0</span>, MAX_LENGTH);<br>    _socket.<span class="hljs-built_in">async_read_some</span>(boost::asio::<span class="hljs-built_in">buffer</span>(_data, MAX_LENGTH),<br>        boost::asio::<span class="hljs-built_in">bind_executor</span>(_strand, std::<span class="hljs-built_in">bind</span>(&amp;CSession::HandleRead, <span class="hljs-keyword">this</span>,<br>            std::placeholders::_1, std::placeholders::_2, <span class="hljs-built_in">SharedSelf</span>())));<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>IOThreadPool相比于IOServicePool，速度慢一些。</li>
+</ul>
+<p>参考列表<br><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1FV4y1U7oo/">https://www.bilibili.com/video/BV1FV4y1U7oo/</a><br><a target="_blank" rel="noopener" href="https://llfc.club/category?catid=225RaiVNI8pFDD5L4m807g7ZwmF#!aid/2Qld2hoFIu8ycYBJXQdxwyWEBfy">https://llfc.club/category?catid=225RaiVNI8pFDD5L4m807g7ZwmF#!aid/2Qld2hoFIu8ycYBJXQdxwyWEBfy</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" class="category-chain-item">网络编程</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/" class="print-no-link">#C++</a>
+      
+        <a href="/tags/HTTP/" class="print-no-link">#HTTP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>C++ asio学习五</div>
+      <div>https://cauccliu.github.io/2024/03/26/C++ asio学习五/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>March 26, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/03/26/C++%20asio%E5%AD%A6%E4%B9%A0%E5%9B%9B/" title="C++ asio学习四">
+                        <span class="hidden-mobile">C++ asio学习四</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
