@@ -23,18 +23,18 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="C++ asio学习四大小端字节序 网络字节序为大端序，计算机内部存储有可能是大端，有可能是小端。 网络传输时，需要将本地数据转换为大端序，实现字节序的转换。  判断是大端还是小端： 1234567891011&#x2F;&#x2F; 判断当前系统的字节序是大端序还是小端序bool is_big_endian() &amp;#123;    int num &#x3D; 1;    if (*(char*)&amp;num &#x3D;&#x3D; 1)">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/1aab044eae7045219f3c290c2e960c10.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/3744a5b013fd404480bf2de89d328bc0.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/df99360b61ee45fbbbea08107bc07586.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/324ae7b9b3ee4a14871bd37093fb3f28.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040ae09f345e8d039bc6ff.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040b019f345e8d039cda6c.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040b2b9f345e8d039e4bd4.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040ba49f345e8d03a26b7d.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040bb99f345e8d03a331f6.png">
 <meta property="article:published_time" content="2024-03-26T13:17:16.759Z">
-<meta property="article:modified_time" content="2024-03-26T13:17:42.412Z">
+<meta property="article:modified_time" content="2024-03-27T12:08:53.385Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66040ae09f345e8d039bc6ff.png">
   
   
   
@@ -281,7 +281,7 @@
               <div class="markdown-body">
                 
                 <h1 id="C-asio学习四"><a href="#C-asio学习四" class="headerlink" title="C++ asio学习四"></a>C++ asio学习四</h1><h2 id="大小端字节序"><a href="#大小端字节序" class="headerlink" title="大小端字节序"></a>大小端字节序</h2><ul>
-<li><code>网络字节序为大端序</code>，计算机内部存储有可能是大端，有可能是小端。<br><img src="https://img-blog.csdnimg.cn/direct/b56232446c7e42ba9a9f2aef5e712d9a.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li><code>网络字节序为大端序</code>，计算机内部存储有可能是大端，有可能是小端。<br><img src="https://pic.imgdb.cn/item/66040ae09f345e8d039bc6ff.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 <li>网络传输时，需要将本地数据转换为大端序，实现字节序的转换。</li>
 </ul>
 <p><code>判断是大端还是小端：</code></p>
@@ -311,7 +311,7 @@
 <li>build binaries目录选择<strong>自己创建的visualstudio目录</strong>。</li>
 <li>点击<strong>config，再点击generate</strong>就可以生成了。</li>
 <li>就可以看到<strong>visualstudio目录内生成了.sln文件</strong>。</li>
-<li>点击.sln文件打开项目<br><img src="https://img-blog.csdnimg.cn/direct/1aab044eae7045219f3c290c2e960c10.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>点击.sln文件打开项目<br><img src="https://pic.imgdb.cn/item/66040b019f345e8d039cda6c.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 <li>单独选择libprotobuf编译。</li>
 <li>编译时可以选择debug和release，建议每一个都编译一遍，这样就有debug和release两个版本的库了。</li>
 <li>debug版本的库，编译之后，会在visualstudio目录下的Debug文件夹里。</li>
@@ -366,8 +366,8 @@
 </ol>
 <h2 id="JSONCPP"><a href="#JSONCPP" class="headerlink" title="JSONCPP"></a>JSONCPP</h2><p>JSONCPP源码链接：<a target="_blank" rel="noopener" href="https://github.com/open-source-parsers/jsoncpp">https://github.com/open-source-parsers/jsoncpp</a></p>
 <ol>
-<li>JSOCPP源码下载以后，首先复制一份include文件夹下的json文件夹，头文件留着后续备用。<br><img src="https://img-blog.csdnimg.cn/direct/3744a5b013fd404480bf2de89d328bc0.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
-<li>使用Cmake生成项目。在IDE中编译jsoncpp_lib，可以在项目的lib&#x2F;Debug文件夹下找到jsoncpp.lib，在bin&#x2F;Debug&#x2F;文件夹下找到jsoncpp.dll。将头文件和动态链接库文件，放入项目中即可使用。<br><img src="https://img-blog.csdnimg.cn/direct/df99360b61ee45fbbbea08107bc07586.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/direct/324ae7b9b3ee4a14871bd37093fb3f28.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>jsoncpp库中的类被定义到了一个Json命名空间中，使用时最好先声明这个命名空间。</li>
+<li>JSOCPP源码下载以后，首先复制一份include文件夹下的json文件夹，头文件留着后续备用。<br><img src="https://pic.imgdb.cn/item/66040b2b9f345e8d039e4bd4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>使用Cmake生成项目。在IDE中编译jsoncpp_lib，可以在项目的lib&#x2F;Debug文件夹下找到jsoncpp.lib，在bin&#x2F;Debug&#x2F;文件夹下找到jsoncpp.dll。将头文件和动态链接库文件，放入项目中即可使用。<br><img src="https://pic.imgdb.cn/item/66040ba49f345e8d03a26b7d.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><img src="https://pic.imgdb.cn/item/66040bb99f345e8d03a331f6.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br>jsoncpp库中的类被定义到了一个Json命名空间中，使用时最好先声明这个命名空间。</li>
 </ol>
 <p>配置Jsoncpp：</p>
 <ul>

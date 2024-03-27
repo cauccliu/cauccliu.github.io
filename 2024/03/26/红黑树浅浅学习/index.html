@@ -23,17 +23,17 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="红黑树浅浅学习红黑树概念 二叉树：二叉树是每个节点最多有两个子树的树结构。 二叉查找树：又称“二叉搜索树”，左孩子比父节点小，右孩子比父节点大，还有一个特性就是”中序遍历“可以让结点有序。 平衡二叉树：它是一颗空树或者它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一颗平衡二叉树。 红黑树是一种自平衡的二叉查找树，它属于平衡树，但是却没有平衡二叉树那么“平衡”。可以保证在最坏情况下基">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/0c7841c7852841ebb23540435dd65964.png#pic_center">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/6b7e56348dac4ce1b194e0565bc359df.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/ab537c3388e949d79533347c6b4a032d.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/0aeb83ae1a1c48b889839e7d25cd8ae7.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/660409da9f345e8d03927164.png#pic_center">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040a329f345e8d0395fb22.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040a419f345e8d03967eda.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040a5b9f345e8d03977077.png">
 <meta property="article:published_time" content="2024-03-26T13:03:38.003Z">
-<meta property="article:modified_time" content="2024-03-26T13:04:27.297Z">
+<meta property="article:modified_time" content="2024-03-27T12:00:34.258Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="读书笔记">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/0c7841c7852841ebb23540435dd65964.png#pic_center">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/660409da9f345e8d03927164.png#pic_center">
   
   
   
@@ -294,11 +294,11 @@
 <li>任何叶子节点，到根节点，所经过的黑节点数目相同。</li>
 <li>当前节点到其所有叶节点包含的黑色节点数量相同。</li>
 </ul>
-<p><code>通过这些性质，红黑树可以保证在插入和删除节点时，自动调整树的结构，以保持树的平衡和性质的满足。相比于普通的二叉查找树，红黑树的平衡性更好，查找、插入和删除都具有更稳定的时间复杂度，因此在很多场景下被广泛应用。</code><br><img src="https://img-blog.csdnimg.cn/direct/0c7841c7852841ebb23540435dd65964.png#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p><code>通过这些性质，红黑树可以保证在插入和删除节点时，自动调整树的结构，以保持树的平衡和性质的满足。相比于普通的二叉查找树，红黑树的平衡性更好，查找、插入和删除都具有更稳定的时间复杂度，因此在很多场景下被广泛应用。</code><br><img src="https://pic.imgdb.cn/item/660409da9f345e8d03927164.png#pic_center" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 <hr>
 <h2 id="红黑树平衡性调整"><a href="#红黑树平衡性调整" class="headerlink" title="红黑树平衡性调整"></a>红黑树平衡性调整</h2><ol>
-<li>依次插入 100 90 120，不需要进行平衡性调整<br><img src="https://img-blog.csdnimg.cn/direct/6b7e56348dac4ce1b194e0565bc359df.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
-<li>插入85，把90和120变成黑色，100变成红色。但100必须为黑色，100也变成黑色<br><img src="https://img-blog.csdnimg.cn/direct/ab537c3388e949d79533347c6b4a032d.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>依次插入 100 90 120，不需要进行平衡性调整<br><img src="https://pic.imgdb.cn/item/66040a329f345e8d0395fb22.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>插入85，把90和120变成黑色，100变成红色。但100必须为黑色，100也变成黑色<br><img src="https://pic.imgdb.cn/item/66040a419f345e8d03967eda.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 </ol>
 <p><code>平衡性调整情况1：爷节点为黑色，父节点为红色，且有叔节点为红色，父亲节点为爷节点的左孩子</code></p>
 <ul>
@@ -309,8 +309,8 @@
 </ul>
 </li>
 </ul>
-<ol start="3">
-<li>插入60为红色，红黑树继续进行调整，85变成黑色，90变成红色。<br><img src="https://img-blog.csdnimg.cn/direct/0aeb83ae1a1c48b889839e7d25cd8ae7.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<ol>
+<li>插入60为红色，红黑树继续进行调整，85变成黑色，90变成红色。<br><img src="https://pic.imgdb.cn/item/66040a5b9f345e8d03977077.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 </ol>
 <p><code>平衡性调整情况2：爷节点为黑色，父节点为红色，没有叔节点或叔节点为黑色，父亲节点为爷节点的左孩子，插入的节点是父节点的左孩子</code></p>
 <p><code>平衡性调整情况3：爷节点为黑色，父节点为红色，没有叔节点或叔节点为黑色，父亲节点为爷节点的右孩子，插入的节点是父节点的左孩子</code></p>

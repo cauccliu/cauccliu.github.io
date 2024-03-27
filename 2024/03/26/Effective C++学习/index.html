@@ -23,15 +23,15 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="Effective C++学习尽量用const, enum, inline 替换#define define只在预处理阶段起作用，简单的文本替换，因为在预处理阶段就已经做了替换，发生错误的时候，报错信息不好找。 可以用const来代替宏定义，const在编译、链接过程中起作用； const定义的常量是变量带类型，而#define定义的只是个常数不带类型； define只是简单的字符串替换没有类型检">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b6398600a3044491b2d6bd6c464a5d3a.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/bb9f3aeab8d647a5a89bde73da0a4213.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040d299f345e8d03b0349d.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040d3f9f345e8d03b0f941.png">
 <meta property="article:published_time" content="2024-03-26T13:05:08.187Z">
-<meta property="article:modified_time" content="2024-03-26T13:05:43.163Z">
+<meta property="article:modified_time" content="2024-03-27T12:12:54.572Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="读书笔记">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/b6398600a3044491b2d6bd6c464a5d3a.png">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66040d299f345e8d03b0349d.png">
   
   
   
@@ -422,7 +422,7 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp">全虚函数<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span>&#123;<br>    <span class="hljs-keyword">public</span>:<br>    <span class="hljs-keyword">virtual</span> ~<span class="hljs-built_in">Person</span>();<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> std::string <span class="hljs-title">name</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>= <span class="hljs-number">0</span>;<br>    <span class="hljs-function"><span class="hljs-keyword">virtual</span> std::string <span class="hljs-title">birthDate</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>= <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 <h3 id="一些需要在继承时注意的"><a href="#一些需要在继承时注意的" class="headerlink" title="一些需要在继承时注意的"></a>一些需要在继承时注意的</h3><ul>
 <li>保证继承逻辑正确性，企鹅不是鸟类。</li>
-<li>避免遮掩继承而来的名称：如果继承base类并加上重载函数，而且又希望重新定义或覆写其中的一部分，那么需要加载一个using声明，否则会有些继承函数被覆盖。<br><img src="https://img-blog.csdnimg.cn/direct/b6398600a3044491b2d6bd6c464a5d3a.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/direct/bb9f3aeab8d647a5a89bde73da0a4213.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>避免遮掩继承而来的名称：如果继承base类并加上重载函数，而且又希望重新定义或覆写其中的一部分，那么需要加载一个using声明，否则会有些继承函数被覆盖。<br><img src="https://pic.imgdb.cn/item/66040d299f345e8d03b0349d.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"><br><img src="https://pic.imgdb.cn/item/66040d3f9f345e8d03b0f941.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 <li>pure virtual 函数式提供了一个接口继承，当一个函数式pure virtual的时候，意味着所有的实现都在子类里面实现。不过pure virtual也是可以有实现的，调用他的方法是在调用前加上基类的名称ps-&gt;Shape::draw();</li>
 <li>接口继承和实现继承不同，在public继承下，derived classes总是继承base的接口。</li>
 <li>pure virtual函数只具体指定接口继承。</li>

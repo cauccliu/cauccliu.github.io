@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="C++ asio学习三用智能指针延长session的生命周期问题：   客户端断开后：会触发服务器对应session的写或读事件，由于是异步编程，需要在回调中对读写事件进行处理。 客户端断开， 则应该析构掉该session。但是此时该session在asio底层回调队列中可能还有很多读写函数对象在排队等着执行 。 如果在某个读写回调对象把这个session析构掉了，那之后执行的读写回调函数可能会再">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040abe9f345e8d039aacc4.png">
 <meta property="article:published_time" content="2024-03-26T13:16:10.865Z">
-<meta property="article:modified_time" content="2024-03-26T13:16:45.232Z">
+<meta property="article:modified_time" content="2024-03-27T12:02:23.835Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="HTTP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66040abe9f345e8d039aacc4.png">
   
   
   
@@ -334,7 +334,7 @@
 </li>
 <li>头部已解析：已经处理完头部，消息体没有接收完。<ul>
 <li>消息体还没有接收全：当前数据拷贝到消息节点里，继续监听对方发送。</li>
-<li>消息体长度够了，拷贝信息到消息节点，更新变量，把剩下的数据轮询切包。<br><img src="https://img-blog.csdnimg.cn/direct/b5a954c61db24b8796cbe5f81d528c30.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
+<li>消息体长度够了，拷贝信息到消息节点，更新变量，把剩下的数据轮询切包。<br><img src="https://pic.imgdb.cn/item/66040abe9f345e8d039aacc4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></li>
 </ul>
 </li>
 </ul>

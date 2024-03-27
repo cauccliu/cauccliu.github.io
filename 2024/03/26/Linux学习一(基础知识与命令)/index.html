@@ -23,17 +23,17 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="Linux学习一 : 基础知识与命令基础Linux基础知识  Linux是一个基于文件的操作系统。操作系统需要和硬件进行交互, 对应Linux来说这些硬件都是文件，比如: 操作系统会将 硬盘, 鼠标, 键盘, 显示屏等抽象成一个设备文件来进行管理。   Linux内核：Linux有用户态和内核态两个空间，内核空间是linux的主要部分。Linux内核的主要组件有：系统调用接口、进程管理、内存管理、">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/b3bbe1b6d76e4b729118dc6606f439c4.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/50acf89092ac41088347b48ffb9b3392.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/37146a73b1d842da866125b7e1219de4.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040ff79f345e8d03ca2abf.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/660410039f345e8d03caa747.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/660410119f345e8d03cb2abb.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/6604101f9f345e8d03cbad26.png">
 <meta property="article:published_time" content="2024-03-26T12:40:52.442Z">
-<meta property="article:modified_time" content="2024-03-26T12:47:44.195Z">
+<meta property="article:modified_time" content="2024-03-27T12:25:09.677Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66040ff79f345e8d03ca2abf.png">
   
   
   
@@ -324,20 +324,20 @@
 <p>添加新用户需要使用adduser&#x2F;useradd命令来完成。<br>userdle命令才能删除用户在系统中的用户ID和所属组ID等相关信息，但是需要注意的是在某些Linux版本中用户虽然被删除了， 但是它的家目录却没有被删除，需要我们手动将其删除。<br>groupadd添加用户组, 使用 groupdel删除用户组。<br>passwd 修改密码</p>
 </blockquote>
 <h2 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h2><blockquote>
-<p>tar 涉及参数：<br>c：创建压缩文件<br>z: 使用gzip的方式进行文件压缩<br>j: 使用bzip2的方式进行文件压缩<br>v: 压缩过程中显示压缩信息, 可以省略不写<br>f: 指定压缩包的名字<br><img src="https://img-blog.csdnimg.cn/direct/ad256e3a88dc4995897f8646f8159b48.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>tar 涉及参数：<br>c：创建压缩文件<br>z: 使用gzip的方式进行文件压缩<br>j: 使用bzip2的方式进行文件压缩<br>v: 压缩过程中显示压缩信息, 可以省略不写<br>f: 指定压缩包的名字<br><img src="https://pic.imgdb.cn/item/66040ff79f345e8d03ca2abf.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 </blockquote>
 <p>解压缩</p>
 <blockquote>
-<p>怎么压缩就怎么解压缩，只不过c换成x<br>后缀多加上 -C文件名，可以将文件解压到指定的文件夹下。<br><img src="https://img-blog.csdnimg.cn/direct/b3bbe1b6d76e4b729118dc6606f439c4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>怎么压缩就怎么解压缩，只不过c换成x<br>后缀多加上 -C文件名，可以将文件解压到指定的文件夹下。<br><img src="https://pic.imgdb.cn/item/660410039f345e8d03caa747.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 </blockquote>
 <blockquote>
 <p>zip需要自己安装，挺好用，用的时候搜一下。</p>
 </blockquote>
 <h2 id="查找命令"><a href="#查找命令" class="headerlink" title="查找命令"></a>查找命令</h2><blockquote>
-<p>find：根据文件的属性, 查找对应的磁盘文件。<br>find模糊查询的时候，用到两个符号，*和?，  *可以匹配多个字符，?匹配单个字符。<br>find 搜索路径 - type 文件类型，可以指定文件类型进行搜索。<br>find 搜索的路径 -size [+|-]文件大小 ，可以指定文件大小进行搜索。<br>-maxdepth: 最多搜索到第多少层目录<br>-mindepth: 至少从第多少层开始搜索<br>可以同时执行多个操作、<br>-<strong>exec 是find的参数, 可以在exec参数后添加其他需要被执行的shell命令</strong>。find 添加了 exec 参数之后, 命令的尾部需要加一个后缀 {} ;, 注意 {}和\之间需要有一个空格。<br>find 路径 参数 参数值 -exec shell命令2 {} \ ;<br><strong>在find 中 使用 xargs 关键字我们就可以使用管道</strong>。<br><img src="https://img-blog.csdnimg.cn/direct/50acf89092ac41088347b48ffb9b3392.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>find：根据文件的属性, 查找对应的磁盘文件。<br>find模糊查询的时候，用到两个符号，*和?，  *可以匹配多个字符，?匹配单个字符。<br>find 搜索路径 - type 文件类型，可以指定文件类型进行搜索。<br>find 搜索的路径 -size [+|-]文件大小 ，可以指定文件大小进行搜索。<br>-maxdepth: 最多搜索到第多少层目录<br>-mindepth: 至少从第多少层开始搜索<br>可以同时执行多个操作、<br>-<strong>exec 是find的参数, 可以在exec参数后添加其他需要被执行的shell命令</strong>。find 添加了 exec 参数之后, 命令的尾部需要加一个后缀 {} ;, 注意 {}和\之间需要有一个空格。<br>find 路径 参数 参数值 -exec shell命令2 {} \ ;<br><strong>在find 中 使用 xargs 关键字我们就可以使用管道</strong>。<br><img src="https://pic.imgdb.cn/item/660410119f345e8d03cb2abb.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 </blockquote>
 <blockquote>
-<p>grep 命令用于查找文件里符合条件的字符串。<br>-r: 如果需要搜索目录中的文件内容, 需要进行递归操作, 必须指定该参数<br>-i: 对应要搜索的关键字, <strong>忽略字符大小写的差别</strong>.<br>-n: 在显示符合样式的那一行之前，标示出该行的列数编号<br><img src="https://img-blog.csdnimg.cn/direct/37146a73b1d842da866125b7e1219de4.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>grep 命令用于查找文件里符合条件的字符串。<br>-r: 如果需要搜索目录中的文件内容, 需要进行递归操作, 必须指定该参数<br>-i: 对应要搜索的关键字, <strong>忽略字符大小写的差别</strong>.<br>-n: 在显示符合样式的那一行之前，标示出该行的列数编号<br><img src="https://pic.imgdb.cn/item/6604101f9f345e8d03cbad26.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 </blockquote>
 <blockquote>
 <p>locate：简化版的find, 使用这个命令我们可以根据文件名搜索本地的磁盘文件, 但是locate的效率比find要高很多。原因在于它不搜索具体目录，而是搜索一个本地的数据库文件，这个数据库中含有本地所有文件信息。Linux系统自动创建这个数据库，并且每天自动更新一次，所以使用locate命令查不到最新变动过的文件。为了避免这种情况，可以在使用locate之前，先使用updatedb命令，手动更新数据库。</p>

@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="Liuchang&#39;s Blog">
 <meta property="og:description" content="Linux学习三 : Makefilemake是一个命令工具，是一个解释makefile中指令的命令工具 make工具在构造项目的时候需要加载一个叫做makefile的文件，makefile关系到了整个工程的编译规则。一个工程中的源文件不计数，其按类型、功能、模块分别放在若干个目录中，makefile定义了一系列的规则来指定哪些文件需要先编译，哪些文件需要后编译，哪些文件需要重新编译，甚至于进行更">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/direct/a57b08cf8eab40da997e003b164060d6.png#">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66040f549f345e8d03c3d56b.png">
 <meta property="article:published_time" content="2024-03-26T12:48:00.568Z">
-<meta property="article:modified_time" content="2024-03-26T12:49:22.475Z">
+<meta property="article:modified_time" content="2024-03-27T12:21:56.051Z">
 <meta property="article:author" content="Liuchang">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/direct/a57b08cf8eab40da997e003b164060d6.png#">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66040f549f345e8d03c3d56b.png">
   
   
   
@@ -323,7 +323,7 @@
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-comment"># 这是一个规则，里边使用了自定义变量</span><br>obj=add.o  div.o  main.o  mult.o  sub.o<br>target=calc<br><span class="hljs-variable">$</span>(target):<span class="hljs-variable">$</span>(obj)<br>        gcc  <span class="hljs-variable">$</span>(obj) <span class="hljs-literal">-o</span> <span class="hljs-variable">$</span>(target)<br></code></pre></td></tr></table></figure>
 
 <blockquote>
-<p>预定义变量：在 Makefile 中有一些已经定义的变量，用户可以直接使用这些变量，不用进行定义。在进行编译的时候，某些条件下 Makefile 会使用这些预定义变量的值进行编译。这些预定义变量的名字一般都是大写的。<br><img src="https://img-blog.csdnimg.cn/direct/a57b08cf8eab40da997e003b164060d6.png#" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
+<p>预定义变量：在 Makefile 中有一些已经定义的变量，用户可以直接使用这些变量，不用进行定义。在进行编译的时候，某些条件下 Makefile 会使用这些预定义变量的值进行编译。这些预定义变量的名字一般都是大写的。<br><img src="https://pic.imgdb.cn/item/66040f549f345e8d03c3d56b.png" srcset="/img/loading.gif" lazyload alt="在这里插入图片描述"></p>
 </blockquote>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-comment"># 这是一个规则，里边使用了自定义变量和预定义变量</span><br>obj=add.o  div.o  main.o  mult.o  sub.o<br>target=calc<br>CFLAGS=<span class="hljs-literal">-O3</span> <span class="hljs-comment"># 代码优化</span><br><span class="hljs-variable">$</span>(target):<span class="hljs-variable">$</span>(obj)<br>        <span class="hljs-variable">$</span>(CC)  <span class="hljs-variable">$</span>(obj) <span class="hljs-literal">-o</span> <span class="hljs-variable">$</span>(target) <span class="hljs-variable">$</span>(CFLAGS)<br></code></pre></td></tr></table></figure>
 
