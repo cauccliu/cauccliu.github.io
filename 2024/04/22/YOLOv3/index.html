@@ -1,0 +1,777 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Liuchang">
+  <meta name="keywords" content="blog">
+  
+    <meta name="description" content="YOLOv3 YOLOv3 小黄人单目标检测 YOLOv3目标检测模型 手写实现YOLOv3 构建网络 数据集制作 工具类utils anchor配置文件config train 检测流程      小黄人单目标检测 使用的数据集的坐标为左上角和右下角点位。 输出： c：0或1，表示是否包含目标 x1,y1： x2,y2：两个点用于画出回归框 cls：具体是哪一类的   和标签进行损失对比，损失总">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手写实现Pytorch版本YOLOv3">
+<meta property="og:url" content="https://cauccliu.github.io/2024/04/22/YOLOv3/index.html">
+<meta property="og:site_name" content="Liuchang&#39;s Blog">
+<meta property="og:description" content="YOLOv3 YOLOv3 小黄人单目标检测 YOLOv3目标检测模型 手写实现YOLOv3 构建网络 数据集制作 工具类utils anchor配置文件config train 检测流程      小黄人单目标检测 使用的数据集的坐标为左上角和右下角点位。 输出： c：0或1，表示是否包含目标 x1,y1： x2,y2：两个点用于画出回归框 cls：具体是哪一类的   和标签进行损失对比，损失总">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://pic.imgdb.cn/item/66163fec68eb93571323ea95.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/661640fb68eb93571325d241.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/661641f068eb93571328d6f9.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/6616432868eb9357132b9304.png">
+<meta property="og:image" content="https://pic.imgdb.cn/item/661e51d20ea9cb140363ca08.png">
+<meta property="article:published_time" content="2024-04-22T10:58:53.296Z">
+<meta property="article:modified_time" content="2024-04-22T11:00:06.895Z">
+<meta property="article:author" content="Liuchang">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="CV">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pic.imgdb.cn/item/66163fec68eb93571323ea95.png">
+  
+  
+  
+  <title>手写实现Pytorch版本YOLOv3 - Liuchang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"cauccliu.github.io","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>梅子黄时雨</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="手写实现Pytorch版本YOLOv3"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-04-22 18:58" pubdate>
+          April 22, 2024 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">手写实现Pytorch版本YOLOv3</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="YOLOv3"><a href="#YOLOv3" class="headerlink" title="YOLOv3"></a>YOLOv3</h1><ul>
+<li><a href="#yolov3">YOLOv3</a><ul>
+<li><a href="#%E5%B0%8F%E9%BB%84%E4%BA%BA%E5%8D%95%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B">小黄人单目标检测</a></li>
+<li><a href="#yolov3%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9E%8B">YOLOv3目标检测模型</a></li>
+<li><a href="#%E6%89%8B%E5%86%99%E5%AE%9E%E7%8E%B0yolov3">手写实现YOLOv3</a><ul>
+<li><a href="#%E6%9E%84%E5%BB%BA%E7%BD%91%E7%BB%9C">构建网络</a></li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%B6%E4%BD%9C">数据集制作</a></li>
+<li><a href="#%E5%B7%A5%E5%85%B7%E7%B1%BButils">工具类utils</a></li>
+<li><a href="#anchor%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6config">anchor配置文件config</a></li>
+<li><a href="#train">train</a></li>
+<li><a href="#%E6%A3%80%E6%B5%8B%E6%B5%81%E7%A8%8B">检测流程</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="小黄人单目标检测"><a href="#小黄人单目标检测" class="headerlink" title="小黄人单目标检测"></a>小黄人单目标检测</h2><ol>
+<li>使用的数据集的坐标为左上角和右下角点位。</li>
+<li>输出：<ol>
+<li>c：0或1，表示是否包含目标</li>
+<li>x1,y1：</li>
+<li>x2,y2：两个点用于画出回归框</li>
+<li>cls：具体是哪一类的</li>
+</ol>
+</li>
+<li>和标签进行损失对比，损失总和进行反向传播</li>
+</ol>
+<h2 id="YOLOv3目标检测模型"><a href="#YOLOv3目标检测模型" class="headerlink" title="YOLOv3目标检测模型"></a>YOLOv3目标检测模型</h2><p><img src="https://pic.imgdb.cn/item/66163fec68eb93571323ea95.png" srcset="/img/loading.gif" lazyload alt="YOLO实现多目标检测基础"></p>
+<ol>
+<li>一个图像中可能有多个目标，上面的情况不能用了。YOLO和单目标检测逻辑不一样了。将图片分格子，每个格子分好之后，判断每个格子里面是否有符合要求的c，x1……cls。上图中，打勾的红色，判定里面有目标，就取目标，没打钩的，就判定里面没目标。</li>
+<li>图像金字塔实现多目标检测。</li>
+<li>对图片区域的等分：<ol>
+<li>13*13：大目标</li>
+<li>26*26：中目标</li>
+<li>52*52：小目标</li>
+</ol>
+</li>
+<li>YOLO采用的图片标注为<code>中心点和w，h</code>的形式，之前单目标检测，用的是左上角和右下角坐标。<ol>
+<li>左上角+右下角的方式：有一个坐标有问题，那就模型框误差了。</li>
+<li>中心点方式：中心点确定以后，w和h学习过程中，去确定图像的宽高。W，H和中心点互不影响。</li>
+</ol>
+</li>
+</ol>
+<p><img src="https://pic.imgdb.cn/item/661640fb68eb93571325d241.png" srcset="/img/loading.gif" lazyload alt="中心点坐标"></p>
+<p>YOLO将物体分为了大中小九种，设置了9种先验框。图像分块的左上角会给一个锚点。<br><img src="https://pic.imgdb.cn/item/661641f068eb93571328d6f9.png" srcset="/img/loading.gif" lazyload alt="锚点"></p>
+<p><img src="https://pic.imgdb.cn/item/6616432868eb9357132b9304.png" srcset="/img/loading.gif" lazyload alt="锚点画框"></p>
+<ol>
+<li>每个锚点上都会画框，画框和原始框对比IOU交并比，根据IOU判断当前是否存在目标。</li>
+<li>图像目标原始中心点和锚点的偏移量进行计算时，数原始中心点在哪个格子，找到左上角锚点以后，回归计算偏移量，训练时计算偏移量就可以了。</li>
+<li>3*3怎么进行下采样的？步长为2. 卷积后大小为原来的1&#x2F;2。</li>
+</ol>
+<p><img src="https://pic.imgdb.cn/item/661e51d20ea9cb140363ca08.png" srcset="/img/loading.gif" lazyload alt="DarkNet53网络结构"></p>
+<h2 id="手写实现YOLOv3"><a href="#手写实现YOLOv3" class="headerlink" title="手写实现YOLOv3"></a>手写实现YOLOv3</h2><h3 id="构建网络"><a href="#构建网络" class="headerlink" title="构建网络"></a>构建网络</h3><ul>
+<li>定义卷积块，残差块，卷积集合块（包含多组卷积，1x1卷积和3x3卷积都有）。</li>
+<li>下采样模块（卷积核大小为3，步长为2的卷积），上采样插值。</li>
+<li>定义YOLOv3网络，是之前定义小的模块的组合。</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment"># 卷积块</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ConvolutionalLayer</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,in_channels,out_channels,kernel_size,stride,padding,bias=<span class="hljs-literal">False</span></span>):<br>        <span class="hljs-built_in">super</span>(ConvolutionalLayer,self).__init__()<br>        self.sub_module = nn.Sequential(<br>            nn.Conv2d(in_channels,out_channels,kernel_size,stride,padding,bias = bias),<br>            nn.BatchNorm2d(out_channels),<br>            nn.LeakyReLU(),<br>        )<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self,x</span>):<br>        <span class="hljs-keyword">return</span> self.sub_module(x)<br><br><span class="hljs-comment"># 残差块</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ResidualLayer</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,in_channels,out_channels</span>):<br>        <span class="hljs-built_in">super</span>(ResidualLayer,self).__init__()<br>        self.sub_module = nn.Sequential(<br>            ConvolutionalLayer(in_channels,out_channels,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>),<br>            ConvolutionalLayer(out_channels,in_channels,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>        )<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self,x</span>):<br>        <span class="hljs-keyword">return</span> self.sub_module(x)+x<br><br><span class="hljs-comment"># 卷积集合块</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ConvolutionalSetLayer</span>(torch.nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, in_channels, out_channels</span>):<br>        <span class="hljs-built_in">super</span>(ConvolutionalSetLayer, self).__init__()<br><br>        self.sub_module = torch.nn.Sequential(<br>            ConvolutionalLayer(in_channels, out_channels, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>),<br>            ConvolutionalLayer(out_channels, in_channels, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>),<br><br>            ConvolutionalLayer(in_channels, out_channels, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>),<br>            ConvolutionalLayer(out_channels, in_channels, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>),<br><br>            ConvolutionalLayer(in_channels, out_channels, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>),<br>        )<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x</span>):<br>        <span class="hljs-keyword">return</span> self.sub_module(x)<br>    <br><br><span class="hljs-comment"># 下采样</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">DownSamplingLayer</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self,in_channels,out_channels</span>):<br>        <span class="hljs-built_in">super</span>(DownSamplingLayer,self).__init__()<br>        self.sub_module = nn.Sequential(<br>            ConvolutionalLayer(in_channels,out_channels,<span class="hljs-number">3</span>,<span class="hljs-number">2</span>,<span class="hljs-number">1</span>),<br>        )<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self,x</span>):<br>        <span class="hljs-keyword">return</span> self.sub_module(x)<br>    <br><span class="hljs-comment"># 上采样</span><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">UpSamplingLayer</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">super</span>(UpSamplingLayer,self).__init__()<br>        <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self,x</span>):<br>        <span class="hljs-keyword">return</span> functional.interpolate(x,scale_factor=<span class="hljs-number">2</span>,mode=<span class="hljs-string">&#x27;nearest&#x27;</span>)<br>    <br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Yolo_V3_Net</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">super</span>(Yolo_V3_Net,self).__init__()<br><br>        self.trunk_52 = nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">3</span>,<span class="hljs-number">32</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            DownSamplingLayer(<span class="hljs-number">32</span>,<span class="hljs-number">64</span>),<br><br>            ResidualLayer(<span class="hljs-number">64</span>,<span class="hljs-number">32</span>),<br><br>            DownSamplingLayer(<span class="hljs-number">64</span>,<span class="hljs-number">128</span>),<br><br>            ResidualLayer(<span class="hljs-number">128</span>,<span class="hljs-number">64</span>),<br>            ResidualLayer(<span class="hljs-number">128</span>,<span class="hljs-number">64</span>),<br><br>            DownSamplingLayer(<span class="hljs-number">128</span>,<span class="hljs-number">256</span>),<br><br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>            ResidualLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>),<br>        )<br><br>        self.trunk_26 = nn.Sequential(<br>            DownSamplingLayer(<span class="hljs-number">256</span>,<span class="hljs-number">512</span>),<br><br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>            ResidualLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>),<br>        )<br><br>        self.trunk_13 = nn.Sequential(<br>            DownSamplingLayer(<span class="hljs-number">512</span>,<span class="hljs-number">1024</span>),<br><br>            ResidualLayer(<span class="hljs-number">1024</span>,<span class="hljs-number">512</span>),<br>            ResidualLayer(<span class="hljs-number">1024</span>,<span class="hljs-number">512</span>),<br>            ResidualLayer(<span class="hljs-number">1024</span>,<span class="hljs-number">512</span>),<br>            ResidualLayer(<span class="hljs-number">1024</span>,<span class="hljs-number">512</span>),<br>        )<br><br>        self.convset_13 = nn.Sequential(<br>            ConvolutionalSetLayer(<span class="hljs-number">1024</span>,<span class="hljs-number">512</span>)<br>        )<br><br>        self.dection_13 =  nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">512</span>,<span class="hljs-number">1024</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            nn.Conv2d(<span class="hljs-number">1024</span>,<span class="hljs-number">45</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)<br>        )<br><br>        self.up_13_to_26 = nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">512</span>,<span class="hljs-number">256</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            UpSamplingLayer()<br>        )<br><br>        self.convset_26 = nn.Sequential(<br>            ConvolutionalSetLayer(<span class="hljs-number">768</span>,<span class="hljs-number">256</span>)<br>        )<br><br>        self.dection_26 =  nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">256</span>,<span class="hljs-number">512</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            nn.Conv2d(<span class="hljs-number">512</span>,<span class="hljs-number">45</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)<br>        )<br><br>        self.up_26_to_52 = nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">256</span>,<span class="hljs-number">128</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            UpSamplingLayer()<br>        )<br><br>        self.convset_52 = nn.Sequential(<br>            ConvolutionalSetLayer(<span class="hljs-number">384</span>,<span class="hljs-number">128</span>)<br>        )<br><br>        self.dection_52 =  nn.Sequential(<br>            ConvolutionalLayer(<span class="hljs-number">128</span>,<span class="hljs-number">256</span>,<span class="hljs-number">3</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>),<br>            nn.Conv2d(<span class="hljs-number">256</span>,<span class="hljs-number">45</span>,<span class="hljs-number">1</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)<br>        )<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self,x</span>):<br>        h_52 = self.trunk_52(x)<br>        h_26 = self.trunk_26(h_52)<br>        h_13 = self.trunk_13(h_26)<br><br>        convset_13_out = self.convset_13(h_13)<br>        detection_13_out = self.dection_13(convset_13_out)<br>        up_13_to_26_out = self.up_13_to_26(convset_13_out)<br>        cat_13_to_26 = torch.cat((up_13_to_26_out,h_26),dim=<span class="hljs-number">1</span>)<br><br>        convset_26_out = self.convset_26(cat_13_to_26)<br>        detection_26_out = self.dection_26(convset_26_out)<br>        up_26_to_52_out = self.up_26_to_52(convset_26_out)<br>        cat_26_to_52 = torch.cat((up_26_to_52_out,h_52),dim=<span class="hljs-number">1</span>)<br><br>        convset_52_out = self.convset_52(cat_26_to_52)<br>        detection_52_out = self.dection_52(convset_52_out)<br><br>        <span class="hljs-keyword">return</span> detection_13_out,detection_26_out,detection_52_out<br></code></pre></td></tr></table></figure>
+
+<h3 id="数据集制作"><a href="#数据集制作" class="headerlink" title="数据集制作"></a>数据集制作</h3><p>解析xml，将图片名字，多个目标的类别，目标的中心点坐标和宽高，按照行输入到data.txt中，方便后面使用。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs py">class_num=&#123;<br>    <span class="hljs-string">&#x27;person&#x27;</span>:<span class="hljs-number">0</span>,<br>    <span class="hljs-string">&#x27;horse&#x27;</span>:<span class="hljs-number">1</span>,<br>    <span class="hljs-string">&#x27;bicycle&#x27;</span>:<span class="hljs-number">2</span>,<br>&#125;<br>script_dir = os.path.dirname(os.path.realpath(__file__))<br>xml_dir = os.path.join(script_dir, <span class="hljs-string">&#x27;data/image_voc&#x27;</span>)<br>xml_filenames=os.listdir(xml_dir) <span class="hljs-comment"># 获取文件夹下的所有文件名</span><br><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(script_dir+<span class="hljs-string">&#x27;/data.txt&#x27;</span>,<span class="hljs-string">&#x27;a&#x27;</span>) <span class="hljs-keyword">as</span> f:<br>    <span class="hljs-keyword">for</span> xml_filename <span class="hljs-keyword">in</span> xml_filenames:<br>        xml_filename_path = os.path.join(xml_dir,xml_filename)<br>        tree = et.parse(xml_filename_path) <span class="hljs-comment"># 获取xml信息</span><br>        root = tree.getroot()<br>        filename = root.find(<span class="hljs-string">&#x27;filename&#x27;</span>)<br>        names = root.findall(<span class="hljs-string">&#x27;object/name&#x27;</span>)<br>        box=root.findall(<span class="hljs-string">&#x27;object/bndbox&#x27;</span>)<br>        <span class="hljs-comment">#for x1,y1,x2,y2 in box:</span><br>            <span class="hljs-comment">#print(x1.text)</span><br>        data=[]<br>        data.append(filename.text)<br>        <span class="hljs-keyword">for</span> name,box <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(names,box):<br>            cls = class_num[name.text]<br>            <span class="hljs-comment"># math.floor向下取整</span><br>            cx,cy=math.floor((<span class="hljs-built_in">int</span>(box[<span class="hljs-number">0</span>].text)+<span class="hljs-built_in">int</span>(box[<span class="hljs-number">2</span>].text))/<span class="hljs-number">2</span>),math.floor((<span class="hljs-built_in">int</span>(box[<span class="hljs-number">1</span>].text)+<span class="hljs-built_in">int</span>(box[<span class="hljs-number">3</span>].text))/<span class="hljs-number">2</span>)<br>            w,h=(<span class="hljs-built_in">int</span>(box[<span class="hljs-number">2</span>].text)-<span class="hljs-built_in">int</span>(box[<span class="hljs-number">0</span>].text)),(<span class="hljs-built_in">int</span>(box[<span class="hljs-number">3</span>].text)-<span class="hljs-built_in">int</span>(box[<span class="hljs-number">1</span>].text))<br>            data.append(cls)<br>            data.append(cx)<br>            data.append(cy)<br>            data.append(w)<br>            data.append(h)<br>        _<span class="hljs-built_in">str</span>=<span class="hljs-string">&#x27;&#x27;</span><br>        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> data:<br>            _<span class="hljs-built_in">str</span>=_<span class="hljs-built_in">str</span>+<span class="hljs-built_in">str</span>(i)+<span class="hljs-string">&#x27; &#x27;</span><br>        f.write(_<span class="hljs-built_in">str</span>+<span class="hljs-string">&#x27;\n&#x27;</span>) <br>f.close()<br></code></pre></td></tr></table></figure>
+
+<p>创建数据集，制作dataloader：</p>
+<p>init：读入上一步制作好的data.txt。</p>
+<p>len：返回长度</p>
+<p>__getitem__(self, index)：</p>
+<ul>
+<li>获取某个index位置的图片，每隔5份就做一个切割，是一组数据.</li>
+<li>对图片进行缩放到416*416，不对称的部分填充黑色。</li>
+<li>将图片数据转成tensor数据。</li>
+<li>制作先验框数据标签，注意数据的转换，很复杂</li>
+</ul>
+<h3 id="工具类utils"><a href="#工具类utils" class="headerlink" title="工具类utils"></a>工具类utils</h3><p>将图片缩放到416*416，缩放时，先填充黑色，再缩放。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">make_416_image</span>(<span class="hljs-params">path</span>):<br>    img=Image.<span class="hljs-built_in">open</span>(path)<br>    w,h=img.size[<span class="hljs-number">0</span>],img.size[<span class="hljs-number">1</span>]<br>    temp=<span class="hljs-built_in">max</span>(h,w)<br>    mask=Image.new(mode=<span class="hljs-string">&#x27;RGB&#x27;</span>,size=(temp,temp),color=(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>)) <span class="hljs-comment">#填充黑度图</span><br>    mask.paste(img,(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>))<br>    <span class="hljs-keyword">return</span> mask<br></code></pre></td></tr></table></figure>
+
+<h3 id="anchor配置文件config"><a href="#anchor配置文件config" class="headerlink" title="anchor配置文件config"></a>anchor配置文件config</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs py">DATA_HEIGHT = <span class="hljs-number">416</span><br>DATA_WIDTH = <span class="hljs-number">416</span><br><br>CLASS_NUM = <span class="hljs-number">3</span><br><br>anchors = &#123;<br>    <span class="hljs-number">13</span>: [[<span class="hljs-number">270</span>, <span class="hljs-number">254</span>], [<span class="hljs-number">291</span>, <span class="hljs-number">179</span>], [<span class="hljs-number">162</span>, <span class="hljs-number">304</span>]],<br>    <span class="hljs-number">26</span>: [[<span class="hljs-number">175</span>, <span class="hljs-number">222</span>], [<span class="hljs-number">112</span>, <span class="hljs-number">235</span>], [<span class="hljs-number">175</span>, <span class="hljs-number">140</span>]],<br>    <span class="hljs-number">52</span>: [[<span class="hljs-number">81</span>, <span class="hljs-number">118</span>], [<span class="hljs-number">53</span>, <span class="hljs-number">142</span>], [<span class="hljs-number">44</span>, <span class="hljs-number">28</span>]]<br>&#125;<br><br>ANCHORS_AREA = &#123;<br>    <span class="hljs-number">13</span>: [x * y <span class="hljs-keyword">for</span> x, y <span class="hljs-keyword">in</span> anchors[<span class="hljs-number">13</span>]],<br>    <span class="hljs-number">26</span>: [x * y <span class="hljs-keyword">for</span> x, y <span class="hljs-keyword">in</span> anchors[<span class="hljs-number">26</span>]],<br>    <span class="hljs-number">52</span>: [x * y <span class="hljs-keyword">for</span> x, y <span class="hljs-keyword">in</span> anchors[<span class="hljs-number">52</span>]],<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="train"><a href="#train" class="headerlink" title="train"></a>train</h3><p>训练：</p>
+<ul>
+<li>检查GPU</li>
+<li>引入网络模型</li>
+<li>将数据集加载到dataloader</li>
+<li>加载之前训练的权重文件，如果有就加载，没有就不加载</li>
+<li>获取数据后，放到GPU上</li>
+<li>数据导入网络后的输出output，和标签值target计算loss：<ul>
+<li>output换轴，为了后面进行计算</li>
+<li>区分出正样本mask_obj和负样本mask_noobj</li>
+<li>BCELoss计算二分类loss，注意要先用sigmoid激活，做一个数据归一化到0-1之间，方便计算，防止出现梯度爆炸和计算精度的问题</li>
+<li>MSELoss计算回归损失，注意这里中正样本进行计算</li>
+<li>CrossEntropyLoss多分类损失，目标是哪一类，这个也是只用正样本进行计算。</li>
+<li>三个loss按照一定的权重相加，返回总的loss</li>
+</ul>
+</li>
+<li>将13，26，52三层的loss相加，得到总的loss</li>
+<li>梯度清零，反向传播，梯度更新三件套</li>
+<li>打印epoch损失</li>
+<li>保存每个epoch的权重结果</li>
+<li>训练过程可视化的tensorboard</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">def</span> <span class="hljs-title function_">loss_fn</span>(<span class="hljs-params">output, target,c</span>):<br>    output = output.permute(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>)<span class="hljs-comment"># 换轴 #N,45,13,13==&gt;N,13,13,45</span><br>    output = output.reshape(output.size(<span class="hljs-number">0</span>), output.size(<span class="hljs-number">1</span>), output.size(<span class="hljs-number">2</span>), <span class="hljs-number">3</span>, -<span class="hljs-number">1</span>)<span class="hljs-comment">#N,13,13,3,15</span><br><br>    mask_obj = target[..., <span class="hljs-number">0</span>] &gt; <span class="hljs-number">0</span><span class="hljs-comment">#N,13,13,3 # 正样本</span><br>    mask_noobj = target[..., <span class="hljs-number">0</span>] == <span class="hljs-number">0</span> <span class="hljs-comment"># 负样本</span><br><br>    loss_p_fun=nn.BCELoss() <span class="hljs-comment"># 二分类损失</span><br>    loss_p=loss_p_fun(torch.sigmoid(output[...,<span class="hljs-number">0</span>]),target[...,<span class="hljs-number">0</span>]) <span class="hljs-comment"># 正负样本都需要</span><br>    <br>    loss_box_fun=nn.MSELoss() <span class="hljs-comment"># 回归损失</span><br>    loss_box=loss_box_fun(output[mask_obj][...,<span class="hljs-number">1</span>:<span class="hljs-number">5</span>],target[mask_obj][...,<span class="hljs-number">1</span>:<span class="hljs-number">5</span>])<br>    <br>    loss_segment_fun=nn.CrossEntropyLoss() <span class="hljs-comment"># 多分类损失</span><br>    loss_segment = loss_segment_fun(output[mask_obj][...,<span class="hljs-number">5</span>:],torch.argmax(target[mask_obj][...,<span class="hljs-number">5</span>:],dim=<span class="hljs-number">1</span>, keepdim= <span class="hljs-literal">True</span>).squeeze(dim=<span class="hljs-number">1</span>))<br><br>    loss = c * loss_p + (<span class="hljs-number">1</span>-c)*<span class="hljs-number">0.5</span>*loss_box+ (<span class="hljs-number">1</span>-c)*<span class="hljs-number">0.5</span>*loss_segment<br>    <span class="hljs-keyword">return</span> loss<br><br><span class="hljs-keyword">if</span> __name__ ==<span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    device = torch.device(<span class="hljs-string">&#x27;cuda&#x27;</span> <span class="hljs-keyword">if</span> torch.cuda.is_available() <span class="hljs-keyword">else</span> <span class="hljs-string">&#x27;cpu&#x27;</span>) <span class="hljs-comment"># 是否在cuda上训练</span><br>    dataset = YoloDataSet()<br>    data_Loader = DataLoader(dataset,batch_size=<span class="hljs-number">2</span>,shuffle=<span class="hljs-literal">True</span>)<br><br>    weight_path= <span class="hljs-string">&#x27;params/net597.pt&#x27;</span> <span class="hljs-comment"># 权重文件</span><br>    net = Yolo_V3_Net().to(device)<br>    <span class="hljs-keyword">if</span> os.path.exists(weight_path):<br>        net.load_state_dict(torch.load(weight_path))<br><br>    opt = optim.Adam(net.parameters())<br><br>    epoch = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        <span class="hljs-keyword">for</span> target_13, target_26, target_52, img_data <span class="hljs-keyword">in</span> data_Loader:<br>            <span class="hljs-comment"># 数据放到GPU上</span><br>            target_13, target_26, target_52, img_data = target_13.to(device), target_26.to(device), target_52.to(device), img_data.to(device)<br>            <span class="hljs-comment"># print(target_13.shape) # torch.Size([2, 13, 13, 3, 8])</span><br><br>            output_13, output_26, output_52 = net(img_data)<br>            loss_13 = loss_fn(output_13.<span class="hljs-built_in">float</span>(), target_13.<span class="hljs-built_in">float</span>(), <span class="hljs-number">0.7</span>)<br>            loss_26 = loss_fn(output_26.<span class="hljs-built_in">float</span>(), target_26.<span class="hljs-built_in">float</span>(), <span class="hljs-number">0.7</span>)<br>            loss_52 = loss_fn(output_52.<span class="hljs-built_in">float</span>(), target_52.<span class="hljs-built_in">float</span>(), <span class="hljs-number">0.7</span>)<br><br>            loss = loss_13 + loss_26 + loss_52<br>            opt.zero_grad()<br>            loss.backward()<br>            opt.step() <span class="hljs-comment"># 梯度更新三件套</span><br><br>            <span class="hljs-built_in">print</span>(epoch,loss.item())<br>        <br>        torch.save(net.state_dict(), <span class="hljs-string">f&#x27;params/net<span class="hljs-subst">&#123;epoch&#125;</span>.pt&#x27;</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&#x27;<span class="hljs-subst">&#123;epoch&#125;</span>保存成功&#x27;</span>)<br>        epoch+=<span class="hljs-number">1</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="检测流程"><a href="#检测流程" class="headerlink" title="检测流程"></a>检测流程</h3><p>图像输入网络，输出分为3部分(13,26,52)：</p>
+<ul>
+<li>首先筛选置信度很低的，比如置信度小于0.5的直接过滤掉。</li>
+<li>求出检测中心点的索引和偏移量，索引表示在哪个网格，偏移量表示位置相对于网格左上角，偏移了多少。</li>
+<li>回放到416*416图像上，然后再回放到原图上。</li>
+<li>WH：根据先验框和检验框缩放比例的计算后得到。</li>
+</ul>
+<p>init：</p>
+<ul>
+<li>判断cuda是否可用，可用就把网络放到GPU上计算</li>
+<li>加载训练好的权重。</li>
+</ul>
+<p>forward：</p>
+<ul>
+<li>获取网络输出</li>
+<li>根据get_index_and_bias：获取中心点的索引和偏移量</li>
+<li>根据get_true_position：按照先验框，索引，偏移量，计算得到原图上的坐标，偏移量和分类。</li>
+</ul>
+<p>get_index_and_bias：获取中心点的索引和偏移量：</p>
+<ul>
+<li>output换轴，reshape，得到output的形状为 N H W 3 8的形状</li>
+<li>获取大于置信度值的mask</li>
+<li>返回置信度大于设定值的位置索引，和偏移量。</li>
+</ul>
+<p>get_true_position：按照先验框，索引，偏移量，计算得到原图上的坐标，偏移量和分类。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Detector</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-built_in">super</span>(Detector, self).__init__()<br>        self.weight_path= <span class="hljs-string">&#x27;params/net178.pt&#x27;</span><br>        self.net = Yolo_V3_Net().to(device)<br>        <span class="hljs-keyword">if</span> os.path.exists(self.weight_path):<br>            self.net.load_state_dict(torch.load(self.weight_path))<br>        <br>        self.net.<span class="hljs-built_in">eval</span>() <span class="hljs-comment"># 加载batch参数加载到预测过程中</span><br>        <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, <span class="hljs-built_in">input</span>, thresh, anchors,<span class="hljs-keyword">case</span></span>):<br>        output_13, output_26, output_52 = self.net(<span class="hljs-built_in">input</span>)<br>        idxs_13, bias_13 = self.get_index_and_bias(output_13, thresh)<br>        boxes_13 = self.get_true_position(idxs_13, bias_13, <span class="hljs-number">32</span>, anchors[<span class="hljs-number">13</span>],<span class="hljs-keyword">case</span>)<br><br>        idxs_26, bias_26 = self.get_index_and_bias(output_26, thresh)<br>        boxes_26 = self.get_true_position(idxs_26, bias_26, <span class="hljs-number">16</span>, anchors[<span class="hljs-number">26</span>],<span class="hljs-keyword">case</span>)<br><br>        idxs_52, bias_52 = self.get_index_and_bias(output_52, thresh)<br>        boxes_52 = self.get_true_position(idxs_52, bias_52, <span class="hljs-number">8</span>, anchors[<span class="hljs-number">52</span>],<span class="hljs-keyword">case</span>)<br><br>        <span class="hljs-keyword">return</span> torch.cat([boxes_13,boxes_26,boxes_52],dim=<span class="hljs-number">0</span>)<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_index_and_bias</span>(<span class="hljs-params">self,output,thresh</span>):<br>        output = output.permute(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>)<span class="hljs-comment">#</span><br>        output = output.reshape(output.size(<span class="hljs-number">0</span>), output.size(<span class="hljs-number">1</span>), output.size(<span class="hljs-number">2</span>), <span class="hljs-number">3</span>, -<span class="hljs-number">1</span>) <span class="hljs-comment"># N H W 3 8</span><br>        <br>        mask = output[...,<span class="hljs-number">0</span>]&gt;thresh <span class="hljs-comment">#N H W 3 #最后一个维度的第0个元素，代表置信度</span><br>        index = mask.nonzero() <span class="hljs-comment"># 返回为true的坐标索引</span><br>        bias = output[mask]<br><br>        <span class="hljs-keyword">return</span> index,bias<br>    <br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">get_true_position</span>(<span class="hljs-params">self,index,bias,t,anchors,<span class="hljs-keyword">case</span></span>): <span class="hljs-comment"># 多加一个case参数，处理416*416到原图的缩放</span><br>        anchors = torch.tensor(anchors)<br>        a = index[:,<span class="hljs-number">3</span>] <span class="hljs-comment"># 拿到了每个框</span><br>        cy = (index[:,<span class="hljs-number">1</span>].<span class="hljs-built_in">float</span>()+bias[:,<span class="hljs-number">2</span>].<span class="hljs-built_in">float</span>())*t/<span class="hljs-keyword">case</span> <span class="hljs-comment"># 需要区分是13*13特征图上的，还是26*26,52*52上的，按照t比例还原</span><br>        cx = (index[:,<span class="hljs-number">2</span>].<span class="hljs-built_in">float</span>()+bias[:,<span class="hljs-number">1</span>].<span class="hljs-built_in">float</span>())*t/<span class="hljs-keyword">case</span> <span class="hljs-comment"># 需要区分是13*13特征图上的，还是26*26,52*52上的，按照t比例还原</span><br><br>        w = anchors[a,<span class="hljs-number">0</span>]*torch.exp(bias[:,<span class="hljs-number">3</span>])/<span class="hljs-keyword">case</span><br>        h = anchors[a,<span class="hljs-number">1</span>]*torch.exp(bias[:,<span class="hljs-number">4</span>])/<span class="hljs-keyword">case</span><br><br>        p = bias[:,<span class="hljs-number">0</span>]<br>        cls_p = bias[:,<span class="hljs-number">5</span>:]<br>        cls_index = torch.argmax(cls_p,dim=<span class="hljs-number">1</span>)<br><br>        <span class="hljs-keyword">return</span> torch.stack([torch.sigmoid(p),cx,cy,w,h,cls_index],dim=<span class="hljs-number">1</span>)<br></code></pre></td></tr></table></figure>
+
+<p>完整代码：<a target="_blank" rel="noopener" href="https://github.com/cauccliu/YOLOv3Pytorch">https://github.com/cauccliu/YOLOv3Pytorch</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="category-chain-item">人工智能</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Python/" class="print-no-link">#Python</a>
+      
+        <a href="/tags/CV/" class="print-no-link">#CV</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>手写实现Pytorch版本YOLOv3</div>
+      <div>https://cauccliu.github.io/2024/04/22/YOLOv3/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Liuchang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>April 22, 2024</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/04/17/YelloPersonDetect/" title="Pytorch实现单目标检测网络">
+                        <span class="hidden-mobile">Pytorch实现单目标检测网络</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
